@@ -13,13 +13,15 @@ CREATE OR REPLACE TABLE users (
 CREATE OR REPLACE TABLE authors (
     id INT NOT NULL PRIMARY KEY, -- users.id
     id_user INT,
+    _id VARCHAR(64),
+    avatar VARCHAR(128),
     sid VARCHAR(256),
-    name VARCHAR(256),
+    name VARCHAR(128),
     organisations VARCHAR(1024),
     orcid VARCHAR(128),
-    position VARCHAR(256),
+    position VARCHAR(32),
     email VARCHAR(128),
-    bio VARCHAR(256),
+    bio VARCHAR(4096),
     homepage VARCHAR(256),
     INDEX author_ind(id),
     CONSTRAINT fk_user_author FOREIGN KEY (id_user) REFERENCES users(id)
@@ -28,11 +30,13 @@ CREATE OR REPLACE TABLE authors (
 -- [raw_zh, type, t, online_issn] is ignored
 CREATE OR REPLACE TABLE venues (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    _id VARCHAR(64),
     raw_en VARCHAR(256),
+    name VARCHAR(256),
     name_d VARCHAR(256),
-    sid VARCHAR(128),
-    publisher VARCHAR(128),
-    issn VARCHAR(128),
+    sid VARCHAR(256),
+    publisher VARCHAR(256),
+    issn VARCHAR(16),
     INDEX venue_ind(id)
 );
 
@@ -40,20 +44,21 @@ CREATE OR REPLACE TABLE venues (
 CREATE OR REPLACE TABLE articles (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     id_venue INT,
-    title VARCHAR(256),
+    _id VARCHAR(64),
+    title VARCHAR(1024),
     pub_year VARCHAR(8),
-    keywords VARCHAR(1024),
+    keywords VARCHAR(512),
     n_citation INT,
     page_start INT,
     page_end INT,
-    lang VARCHAR(16),
+    volume VARCHAR(32),
+    lang VARCHAR(2),
     issue VARCHAR(64),
-    issn VARCHAR(64),
+    issn VARCHAR(512),
     isbn VARCHAR(64),
-    doi VARCHAR(16),
-    url_pdf VARCHAR(256),
-    url VARCHAR(256),
-    abstract VARCHAR(1024),
+    doi VARCHAR(256),
+    url_pdf VARCHAR(512),
+    abstract TEXT,
     INDEX article_ind(id),
     CONSTRAINT fk_venue_article FOREIGN KEY (id_venue) REFERENCES venues(id)
 );
