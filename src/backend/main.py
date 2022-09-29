@@ -1,5 +1,5 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Request, Form
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -14,8 +14,14 @@ def hello_world():
     return {"message": "Hello World"}
 
 @app.get("/login", include_in_schema=False, response_class=HTMLResponse)
-def UI_login(request: Request):
+def UI_login_get(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
+
+@app.post("/login", include_in_schema=False, response_class=HTMLResponse)
+def UI_login_post(username: str, password: str):
+    response = RedirectResponse('main')
+    response.set_cookie(key="username", value=username)
+    return response
 
 @app.get("/authors/", tags=["Authors"])
 def authors_get():
