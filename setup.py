@@ -25,7 +25,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3.10",
     ],
     python_requires=">=3.8",
-    install_requires=[fastapi],
+    install_requires=[],
     extras_require={
         "dev": [
             "wemake-python-styleguide",
