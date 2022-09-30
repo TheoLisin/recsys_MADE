@@ -25,7 +25,14 @@ setuptools.setup(
         "Programming Language :: Python :: 3.10",
     ],
     python_requires=">=3.8",
-    install_requires=[],
+    install_requires=[
+        "sqlalchemy",
+        "psycopg2-binary",
+        "mariadb",
+        "alembic",
+        "python-dotenv",
+        "bcrypt",
+    ],
     extras_require={
         "dev": [
             "wemake-python-styleguide",
@@ -35,6 +42,11 @@ setuptools.setup(
         "tests": [
             "pytest",
             "pytest-dotenv",
+        ],
+    },
+    entry_points={
+        "console_scripts": [
+            "recsys-db = db.__main__:main",
         ],
     },
 )
