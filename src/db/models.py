@@ -1,8 +1,9 @@
 """Tables representations in SQLAlchemy."""
+import bcrypt
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, ForeignKey, Integer, String, Index
 from sqlalchemy.types import Text
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 
 
 Base = declarative_base()
@@ -19,20 +20,25 @@ class User(Base):
     author = relationship("Author", back_populates="user", uselist=False)
     __table_args__ = (Index("users_ind", id),)
 
-    def set_pwd(self, password: str):
-        pass
+    def set_pwd(self, password: str) -> None:
+        bpass = bytes(password, "UTF-8")
+        salt = bcrypt.gensalt()
+        self.pwdhash = bcrypt.hashpw(bpass, salt)
 
-    def compare_pwd_hashes(self, password: str):
-        pass
+    def compare_pwd_hashes(self, password: str) -> bool:
+        bpass = bytes(password, "UTF-8")
+        return bcrypt.checkpw(bpass, self.pwdhash)
 
 
 class ArticleAuthor(Base):
+    """Article-Author association model."""
     __tablename__ = "article_author"
     id_article = Column(Integer, ForeignKey("articles.id"), primary_key=True)
     id_author = Column(Integer, ForeignKey("authors.id"), primary_key=True)
 
 
 class ArticleKeyword(Base):
+    """Article-Keyword association model."""
     __tablename__ = "article_keyword"
     id_keyword = Column(Integer, ForeignKey("keywords.id"), primary_key=True)
     id_article = Column(Integer, ForeignKey("articles.id"), primary_key=True)
@@ -79,6 +85,7 @@ class Venue(Base):
 
 
 class Keyword(Base):
+    """Tags/keywords model."""
     __tablename__ = "keywords"
     id = Column(Integer, primary_key=True)
     name = Column(String(128))
