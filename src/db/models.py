@@ -29,7 +29,6 @@ class User(Base):
         bpass = bytes(password, "UTF-8")
         return bcrypt.checkpw(bpass, self.pwdhash)
 
-
 class ArticleAuthor(Base):
     """Article-Author association model."""
     __tablename__ = "article_author"
@@ -51,7 +50,7 @@ class Author(Base):
 
     id = Column(Integer, primary_key=True)
     id_user = Column(Integer, ForeignKey("users.id"))
-    _id = Column(String(length=64))
+    old_id = Column(String(length=64))
     avatar = Column(String(length=128))
     sid = Column(String(length=256))
     name = Column(String(length=128))
@@ -67,13 +66,12 @@ class Author(Base):
     )
     __table_args__ = (Index("author_ind", id),)
 
-
 class Venue(Base):
     """Venue model."""
 
     __tablename__ = "venues"
     id = Column(Integer, primary_key=True)
-    _id = Column(String(length=64))
+    old_id = Column(String(length=64))
     raw_en = Column(String(length=256))
     name = Column(String(length=256))
     name_d = Column(String(length=256))
@@ -108,7 +106,7 @@ class Article(Base):
     __tablename__ = "articles"
     id = Column(Integer, primary_key=True)
     id_venue = Column(Integer, ForeignKey("venues.id"))
-    _id = Column(String(length=64))
+    old_id = Column(String(length=64))
     title = Column(String(length=1024))
     pub_year = Column(String(length=8))
     n_citation = Column(Integer)
