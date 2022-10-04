@@ -32,6 +32,7 @@ setuptools.setup(
         "alembic",
         "python-dotenv",
         "bcrypt",
+        "fastapi",
     ],
     extras_require={
         "dev": [

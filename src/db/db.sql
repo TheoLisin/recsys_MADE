@@ -13,7 +13,7 @@ CREATE OR REPLACE TABLE users (
 CREATE OR REPLACE TABLE authors (
     id INT NOT NULL PRIMARY KEY, -- users.id
     id_user INT,
-    _id VARCHAR(64),
+    old_id VARCHAR(64),
     avatar VARCHAR(128),
     sid VARCHAR(256),
     name VARCHAR(128),
@@ -30,7 +30,7 @@ CREATE OR REPLACE TABLE authors (
 -- [raw_zh, type, t, online_issn] is ignored
 CREATE OR REPLACE TABLE venues (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    _id VARCHAR(64),
+    old_id VARCHAR(64),
     raw_en VARCHAR(256),
     name VARCHAR(256),
     name_d VARCHAR(256),
@@ -44,7 +44,7 @@ CREATE OR REPLACE TABLE venues (
 CREATE OR REPLACE TABLE articles (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     id_venue INT,
-    _id VARCHAR(64),
+    old_id VARCHAR(64),
     title VARCHAR(1024),
     pub_year VARCHAR(8),
     keywords VARCHAR(512),
