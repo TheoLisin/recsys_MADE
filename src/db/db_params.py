@@ -5,6 +5,8 @@ from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 from os import environ
 
+from contextlib import contextmanager
+
 load_dotenv()
 
 DB_USER = environ.get("DB_USER")
@@ -27,10 +29,12 @@ engine = create_engine(SYNC_SQLALCHEMY_DATABASE_URL)
 # тут ещё есть автокоммит, помимо expire_on_commit
 # стоит посмотреть надо ли оно вообще
 
-session = sessionmaker(engine, expire_on_commit=False)
+create_session = sessionmaker(engine, expire_on_commit=False)
 
-
-def get_session() -> Session:
-    """Session generator."""
-    with session() as new_session:
-        yield new_session
+@contextmanager
+def get_session():
+    session = create_session()
+    try:
+        yield session
+    finally:
+        session.close()
