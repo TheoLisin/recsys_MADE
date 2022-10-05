@@ -1,4 +1,3 @@
-from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -16,12 +15,24 @@ DB_NAME = environ.get("DB_NAME")
 DB_PORT = environ.get("DB_PORT") or "1234"
 
 
-SYNC_SQLALCHEMY_DATABASE_URL = "mariadb+mariadbconnector://{user}:{pasw}@{host}:{port}/{name}".format(
-    user=DB_USER,
-    pasw=DB_PASSWORD,
-    host=DB_HOST,
-    name=DB_NAME,
-    port=DB_PORT,
+SYNC_SQLALCHEMY_DATABASE_URL = (
+    "mariadb+mariadbconnector://{user}:{pasw}@{host}:{port}/{name}".format(
+        user=DB_USER,
+        pasw=DB_PASSWORD,
+        host=DB_HOST,
+        name=DB_NAME,
+        port=DB_PORT,
+    )
+)
+
+MSQL_SQLALCHEMY_DATABASE_URL = (
+    "mariadb+pymysql://{user}:{pasw}@{host}:{port}/{name}".format(
+        user=DB_USER,
+        pasw=DB_PASSWORD,
+        host=DB_HOST,
+        name=DB_NAME,
+        port=DB_PORT,
+    )
 )
 
 engine = create_engine(SYNC_SQLALCHEMY_DATABASE_URL)
@@ -30,6 +41,7 @@ engine = create_engine(SYNC_SQLALCHEMY_DATABASE_URL)
 # стоит посмотреть надо ли оно вообще
 
 create_session = sessionmaker(engine, expire_on_commit=False)
+
 
 @contextmanager
 def get_session():

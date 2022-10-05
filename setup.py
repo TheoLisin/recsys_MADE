@@ -28,11 +28,14 @@ setuptools.setup(
     install_requires=[
         "sqlalchemy",
         "psycopg2-binary",
-        "mariadb",
+        "mariadb==1.1.3",
         "alembic",
         "python-dotenv",
         "bcrypt",
         "fastapi",
+        "pyspark",
+        "pandas",
+        "pymysql",
     ],
     extras_require={
         "dev": [
