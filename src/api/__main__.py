@@ -24,7 +24,7 @@ def main():
     uvicorn.run(
         app,  # type: ignore
         host=args.host,
-        port=args.port,
+        port=int(args.port),
         log_level="info",
     )
 
