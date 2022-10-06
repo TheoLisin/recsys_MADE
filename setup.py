@@ -36,6 +36,8 @@ setuptools.setup(
         "pyspark",
         "pandas",
         "pymysql",
+        "uvicorn",
+        "Jinja2",
     ],
     extras_require={
         "dev": [
@@ -51,6 +53,11 @@ setuptools.setup(
     entry_points={
         "console_scripts": [
             "recsys-db = db.__main__:main",
+            "recsys-api = api.__main__:main",
         ],
     },
+    package_data={
+        "static": ["*.css"],
+        "templates": ["*.html"],
+    }
 )
