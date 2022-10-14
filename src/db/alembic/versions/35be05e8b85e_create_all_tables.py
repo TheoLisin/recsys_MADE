@@ -1,8 +1,8 @@
 """create all tables
 
-Revision ID: ba93d370f462
+Revision ID: 35be05e8b85e
 Revises: 
-Create Date: 2022-10-06 04:00:49.013433
+Create Date: 2022-10-09 14:46:05.980316
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision = 'ba93d370f462'
+revision = '35be05e8b85e'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -54,7 +54,7 @@ def upgrade() -> None:
     sa.Column('n_citation', sa.Integer(), nullable=True),
     sa.Column('article_len', sa.Integer(), nullable=True),
     sa.Column('lang', sa.String(length=4), nullable=True),
-    sa.Column('issn', sa.String(length=512), nullable=True),
+    sa.Column('issn', sa.String(length=1024), nullable=True),
     sa.Column('isbn', sa.String(length=64), nullable=True),
     sa.Column('abstract', mysql.LONGTEXT(), nullable=True),
     sa.Column('has_doi', sa.Boolean(), nullable=True),
