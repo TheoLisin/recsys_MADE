@@ -131,7 +131,7 @@ class Article(Base):
     n_citation = Column(Integer)
     article_len = Column(Integer)
     lang = Column(String(length=Pows.p2))
-    issn = Column(String(length=Pows.p9))
+    issn = Column(String(length=Pows.p10))
     isbn = Column(String(length=Pows.p6))
     abstract = Column(LONGTEXT)
     has_doi = Column(Boolean)
