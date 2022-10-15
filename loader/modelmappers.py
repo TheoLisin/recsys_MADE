@@ -4,8 +4,8 @@ from base import BaseMap, BasePandasProc
 import pandas as pd
 
 from typing import Dict, List, Optional, Tuple
-from pyspark.sql.functions import col, explode, udf, concat_ws, trim, lower
-from pyspark.sql import DataFrame
+from pyspark.sql.functions import col, explode, udf, concat_ws, trim, lower, length
+from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.types import StringType
 
 
@@ -68,7 +68,7 @@ class VenueMap(BaseMap):
 
         fin_df = cls.from_df(df, col_names)
         fin_df = cls.add_id(fin_df)
-        cls.create_map(fin_df, "id_article", "id", save=True)
+        cls.create_dict(fin_df, "id_article", "id", save=True)
 
         return fin_df.drop("id_article")
 
@@ -77,7 +77,7 @@ class ArticleMap(BaseMap):
     to_exclude: Optional[Tuple[str, ...]] = ("id_venue",)
 
     @classmethod
-    def final_df(cls, df: DataFrame, col_names: List[str], with_id: bool = False) -> pd.DataFrame:
+    def final_df(cls, df: DataFrame, session: SparkSession, col_names: List[str], with_id: bool = False) -> pd.DataFrame:
 
         fin_df = cls.from_df(df, col_names)
 
@@ -85,13 +85,14 @@ class ArticleMap(BaseMap):
             fin_df = cls.add_id(fin_df)
 
         # fos to str
-        def str_fos(x):
-            if x is None or len(x) > 0:
-                return None
-            return ", ".join(x)
+        # def str_fos(x):
+        #     if x is None or len(x) > 0:
+        #         return None
+        #     return ", ".join(x)
 
-        reg_str = udf(lambda x: str_fos(x), StringType())
-        fin_df = fin_df.withColumn("fos", reg_str(col("fos")))
+        # reg_str = udf(lambda x: str_fos(x), StringType())
+        # print("concating fos")
+        fin_df = fin_df.withColumn("fos", concat_ws(", ", "fos"))
 
         if "VenueMap_id_article_id.p" in os.listdir("./loader"):
             with open("./loader/VenueMap_id_article_id.p", "rb") as file:
@@ -99,7 +100,8 @@ class ArticleMap(BaseMap):
         else:
             raise ValueError("Article old id to venue new id mapper is needed.")
 
-        fin_df = cls.apply_dct_int_to_col(fin_df, ven_art_map, "id_venue", "id")
+        # print("applying dct")
+        fin_df = cls.apply_dct_int_to_col(fin_df, session, ven_art_map, "id_venue", "id")
 
         return fin_df
 
@@ -112,30 +114,31 @@ class ArticleKeywordMap(BaseMap):
     to_explode = "keywords"
 
     @classmethod
-    def final_df(cls, df: DataFrame, col_names: List[str] = []):
+    def final_df(cls, df: DataFrame, session: SparkSession, col_names: List[str] = [], max_len: int = 256):
         fin_df = cls.from_df(df)
         fin_df = fin_df.withColumn("name", trim(lower(col("name"))))
-
+        fin_df = fin_df.filter(length(col("name")) < max_len)
         kw_id = fin_df.select("name").dropDuplicates()
         kw_id = cls.add_id(kw_id)
-        mapper = cls.create_map(kw_id, "name", "id")
-        fin_df = cls.apply_dct_int_to_col(fin_df, mapper, "id_keyword", "name")
+        mapper = cls.create_dict(kw_id, "name", "id")
+        fin_df = cls.apply_dct_int_to_col(fin_df, session, mapper, "id_keyword", "name")
 
-        return kw_id, fin_df.select("id_article", "id_keyword")
+        return kw_id, fin_df.select("id_article", "id_keyword").drop_duplicates()
 
 
 class ReferenceMap(BaseMap):
     rename_map: Dict[str, str] = {
         "id": "id_where",
-        "references": "id_what",
+        "references": "old_id_what",
     }
     to_explode: Optional[str] = "references"
 
     @classmethod
-    def final_df(cls, df: DataFrame, col_names: List[str] = []) -> pd.DataFrame:
+    def final_df(cls, df: DataFrame, session: SparkSession, col_names: List[str] = []) -> pd.DataFrame:
         
-        mapper = cls.create_map(df, "old_id", "id")
+        mapper = cls.create_dict(df, "old_id", "id")
         fin_df = cls.from_df(df)
-        fin_df = cls.apply_dct_int_to_col(fin_df, mapper, "id_what", "id_what").dropna()
+        fin_df = cls.apply_dct_int_to_col(fin_df, session, mapper, "id_what", "old_id_what") \
+            .drop("old_id_what").dropna().drop_duplicates()
 
         return fin_df
