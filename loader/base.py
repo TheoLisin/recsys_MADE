@@ -1,13 +1,14 @@
+from itertools import chain
 import pickle
 import pandas as pd
 import json
 
 from numpy import unique
 from typing import Dict, List, Optional, Set, Tuple, Hashable, Any
-from pyspark.sql.functions import col, explode, row_number, udf, lit
+from pyspark.sql.functions import col, explode, row_number, udf, lit, create_map
 from pyspark.sql.window import Window
 from pyspark.sql.types import IntegerType
-from pyspark.sql import DataFrame
+from pyspark.sql import DataFrame, SparkSession
 
 
 class BaseMap(object):
@@ -82,12 +83,13 @@ class BaseMap(object):
         return df.withColumn(name, row_number().over(mw))
 
     @classmethod
-    def create_map(
+    def create_dict(
         cls, df: DataFrame, key_col: str, val_col: str, save: bool = False
     ) -> Dict[Any, Any]:
 
         pd_df = df.select(key_col, val_col).toPandas()
         mapper = {k: v for k, v in zip(pd_df[key_col], pd_df[val_col])}
+        # mapping_exp = create_map([lit(x) for x in chain(*mapper.items())])
 
         if save:
             clsname = cls.__name__
@@ -125,13 +127,22 @@ class BaseMap(object):
 
     @classmethod
     def apply_dct_int_to_col(
-        cls, df: DataFrame, dct: Dict[Any, int], new_col: str, col_to_apply: str
+        cls,
+        df: DataFrame,
+        session: SparkSession,
+        mapper: Dict[str, int],
+        new_col: str,
+        col_to_apply: str,
     ) -> DataFrame:
-        def apply_dct(x):
-            return dct.get(x, None)
 
-        reg_apply = udf(lambda x: apply_dct(x), IntegerType())
-        return df.withColumn(new_col, reg_apply(col(col_to_apply)))
+        df_mapper = pd.DataFrame(
+            {
+                "key": list(mapper.keys()),
+                new_col: list(mapper.values()),
+            }
+        )
+        sc_mapper = session.createDataFrame(df_mapper)
+        return df.join(sc_mapper, df[col_to_apply] == sc_mapper["key"], "left").drop("key")
 
 
 class BasePandasProc(object):
