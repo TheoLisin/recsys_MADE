@@ -61,11 +61,11 @@ class Author(Base):
     old_id = Column(String(length=Pows.p6))
     gid = Column(String(length=Pows.p5))
     sid = Column(String(length=Pows.p6))
-    name = Column(String(length=Pows.p7))
+    name = Column(String(length=Pows.p9))
     organisation = Column(String(length=Pows.p11))
     orgid = Column(String(length=Pows.p7))
     orgs_count = Column(Integer)
-    email = Column(String(length=Pows.p7))
+    email = Column(String(length=Pows.p9))
     user = relationship("User", back_populates="author")
     articles = relationship(
         "Article",
@@ -99,7 +99,7 @@ class Keyword(Base):
 
     __tablename__ = "keywords"
     id = Column(Integer, primary_key=True)
-    name = Column(String(length=Pows.p9))
+    name = Column(String(length=Pows.p8))
     articles = relationship(
         "Article",
         secondary="article_keyword",
@@ -126,12 +126,12 @@ class Article(Base):
     id = Column(Integer, primary_key=True)
     id_venue = Column(Integer, ForeignKey("venues.id"))
     old_id = Column(String(length=Pows.p6))
-    title = Column(String(length=Pows.p10))
+    title = Column(String(length=Pows.p11))
     year = Column(Integer)
     n_citation = Column(Integer)
     article_len = Column(Integer)
     lang = Column(String(length=Pows.p2))
-    issn = Column(String(length=Pows.p9))
+    issn = Column(String(length=Pows.p10))
     isbn = Column(String(length=Pows.p6))
     abstract = Column(LONGTEXT)
     has_doi = Column(Boolean)
