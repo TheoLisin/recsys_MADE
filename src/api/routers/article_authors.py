@@ -1,4 +1,5 @@
 from api import schemas
+from api.constants import RESPONSE_OK
 
 from db.models import ArticleAuthor
 from db.db_params import get_session
@@ -6,6 +7,7 @@ from db.db_params import get_session
 from typing import List
 from fastapi import HTTPException, APIRouter
 
+from http import HTTPStatus
 
 router = APIRouter(
     prefix="/articleauthors",
@@ -50,7 +52,7 @@ def articleauthors_get_id(id_article: int):
         )
         if articleauthor is None:
             raise HTTPException(
-                status_code=404,
+                status_code=HTTPStatus.NOT_FOUND,
                 detail="ArticleAuthor with the given id_article was not found",
             )
         return schemas.PArticleAuthor.from_orm(articleauthor)
@@ -70,9 +72,9 @@ def articleauthors_delete_id(articleauthor: schemas.PArticleAuthor):
         )
         if articleauthor is None:
             raise HTTPException(
-                status_code=404,
+                status_code=HTTPStatus.NOT_FOUND,
                 detail="ArticleAuthor with the given id_article was not found",
             )
         session.delete(articleauthor)
         session.commit()
-    return {"status": "OK"}
+    return RESPONSE_OK

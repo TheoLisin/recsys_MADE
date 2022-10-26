@@ -1,4 +1,5 @@
 from api import schemas
+from api.constants import RESPONSE_OK
 
 from db.models import Author
 from db.db_params import get_session
@@ -6,6 +7,7 @@ from db.db_params import get_session
 from typing import List
 from fastapi import HTTPException, APIRouter
 
+from http import HTTPStatus
 
 router = APIRouter(
     prefix="/authors",
@@ -37,7 +39,7 @@ def authors_get_id(id: int):
         author = session.query(Author).filter(Author.id == id).first()
         if author is None:
             raise HTTPException(
-                status_code=404, detail="Author with the given ID was not found"
+                status_code=HTTPStatus.NOT_FOUND, detail="Author with the given ID was not found"
             )
     return schemas.PAuthor.from_orm(author)
 
@@ -49,9 +51,9 @@ def authors_put_id(id: int, author: schemas.PAuthorCreate):
         author = session.query(Author).filter(Author.id == id).first()
         if author is None:
             raise HTTPException(
-                status_code=404, detail="Author with the given ID was not found"
+                status_code=HTTPStatus.NOT_FOUND, detail="Author with the given ID was not found"
             )
-    return {"status": "OK"}
+    return RESPONSE_OK
 
 
 @router.delete("/{id}", tags=["Authors"])
@@ -61,8 +63,8 @@ def authors_delete_id(id: int):
         author = session.query(Author).filter(Author.id == id).first()
         if author is None:
             raise HTTPException(
-                status_code=404, detail="Author with the given ID was not found"
+                status_code=HTTPStatus.NOT_FOUND, detail="Author with the given ID was not found"
             )
         session.delete(author)
         session.commit()
-    return {"status": "OK"}
+    return RESPONSE_OK

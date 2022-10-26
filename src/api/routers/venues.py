@@ -1,4 +1,5 @@
 from api import schemas
+from api.constants import RESPONSE_OK
 
 from db.models import Venue
 from db.db_params import get_session
@@ -6,6 +7,7 @@ from db.db_params import get_session
 from typing import List
 from fastapi import HTTPException, APIRouter
 
+from http import HTTPStatus
 
 router = APIRouter(
     prefix="/venues",
@@ -37,7 +39,7 @@ def venues_get_id(id: int):
         venue = session.query(Venue).filter(Venue.id == id).first()
         if venue is None:
             raise HTTPException(
-                status_code=404, detail="Venue with the given ID was not found"
+                status_code=HTTPStatus.NOT_FOUND, detail="Venue with the given ID was not found"
             )
         return schemas.PVenue.from_orm(venue)
 
@@ -49,9 +51,9 @@ def venues_put_id(id: int, venue: schemas.PVenueCreate):
         venue = session.query(Venue).filter(Venue.id == id).first()
         if venue is None:
             raise HTTPException(
-                status_code=404, detail="Venue with the given ID was not found"
+                status_code=HTTPStatus.NOT_FOUND, detail="Venue with the given ID was not found"
             )
-    return {"status": "OK"}
+    return RESPONSE_OK
 
 
 @router.delete("/{id}", tags=["Venues"])
@@ -61,8 +63,8 @@ def venues_delete_id(id: int):
         venue = session.query(Venue).filter(Venue.id == id).first()
         if venue is None:
             raise HTTPException(
-                status_code=404, detail="Venue with the given ID was not found"
+                status_code=HTTPStatus.NOT_FOUND, detail="Venue with the given ID was not found"
             )
         session.delete(venue)
         session.commit()
-    return {"status": "OK"}
+    return RESPONSE_OK

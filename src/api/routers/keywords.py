@@ -1,4 +1,5 @@
 from api import schemas
+from api.constants import RESPONSE_OK
 
 from db.models import Keyword
 from db.db_params import get_session
@@ -6,6 +7,7 @@ from db.db_params import get_session
 from typing import List
 from fastapi import HTTPException, APIRouter
 
+from http import HTTPStatus
 
 router = APIRouter(
     prefix="/keywords",
@@ -37,7 +39,7 @@ def keywords_get_id(id: int):
         keyword = session.query(Keyword).filter(Keyword.id == id).first()
         if keyword is None:
             raise HTTPException(
-                status_code=404, detail="Keyword with the given ID was not found"
+                status_code=HTTPStatus.NOT_FOUND, detail="Keyword with the given ID was not found"
             )
         return schemas.PKeyword.from_orm(keyword)
 
@@ -49,9 +51,9 @@ def keywords_put_id(id: int, keyword: schemas.PKeywordCreate):
         keyword = session.query(Keyword).filter(Keyword.id == id).first()
         if keyword is None:
             raise HTTPException(
-                status_code=404, detail="Keyword with the given ID was not found"
+                status_code=HTTPStatus.NOT_FOUND, detail="Keyword with the given ID was not found"
             )
-    return {"status": "OK"}
+    return RESPONSE_OK
 
 
 @router.delete("/{id}", tags=["Keywords"])
@@ -61,8 +63,8 @@ def keywords_delete_id(id: int):
         keyword = session.query(Keyword).filter(Keyword.id == id).first()
         if keyword is None:
             raise HTTPException(
-                status_code=404, detail="Keyword with the given ID was not found"
+                status_code=HTTPStatus.NOT_FOUND, detail="Keyword with the given ID was not found"
             )
         session.delete(keyword)
         session.commit()
-    return {"status": "OK"}
+    return RESPONSE_OK

@@ -1,4 +1,5 @@
 from api import schemas
+from api.constants import RESPONSE_OK
 
 from db.models import Reference
 from db.db_params import get_session
@@ -6,6 +7,7 @@ from db.db_params import get_session
 from typing import List
 from fastapi import HTTPException, APIRouter
 
+from http import HTTPStatus
 
 router = APIRouter(
     prefix="/references",
@@ -41,7 +43,7 @@ def references_get_id(id_where: int):
         )
         if reference is None:
             raise HTTPException(
-                status_code=404,
+                status_code=HTTPStatus.NOT_FOUND,
                 detail="Reference with the given id_where was not found",
             )
         return schemas.PReference.from_orm(reference)
@@ -61,9 +63,9 @@ def references_delete_id(reference: schemas.PReference):
         )
         if reference is None:
             raise HTTPException(
-                status_code=404,
+                status_code=HTTPStatus.NOT_FOUND,
                 detail="Reference with the given id_where was not found",
             )
         session.delete(reference)
         session.commit()
-    return {"status": "OK"}
+    return RESPONSE_OK

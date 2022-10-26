@@ -1,4 +1,5 @@
 from api import schemas
+from api.constants import RESPONSE_OK
 
 from db.models import User
 from db.db_params import get_session
@@ -6,6 +7,7 @@ from db.db_params import get_session
 from typing import List
 from fastapi import HTTPException, APIRouter
 
+from http import HTTPStatus
 
 router = APIRouter(
     prefix="/users",
@@ -37,7 +39,7 @@ def users_get_id(id: int):
         user = session.query(User).filter(User.id == id).first()
         if user is None:
             raise HTTPException(
-                status_code=404, detail="User with the given ID was not found"
+                status_code=HTTPStatus.NOT_FOUND, detail="User with the given ID was not found"
             )
         return schemas.PUser.from_orm(user)
 
@@ -49,9 +51,9 @@ def users_put_id(id: int, user: schemas.PUserCreate):
         user = session.query(User).filter(User.id == id).first()
         if user is None:
             raise HTTPException(
-                status_code=404, detail="User with the given ID was not found"
+                status_code=HTTPStatus.NOT_FOUND, detail="User with the given ID was not found"
             )
-    return {"status": "OK"}
+    return RESPONSE_OK
 
 
 @router.delete("/{id}")
@@ -61,8 +63,8 @@ def users_delete_id(id: int):
         user = session.query(User).filter(User.id == id).first()
         if user is None:
             raise HTTPException(
-                status_code=404, detail="User with the given ID was not found"
+                status_code=HTTPStatus.NOT_FOUND, detail="User with the given ID was not found"
             )
         session.delete(user)
         session.commit()
-    return {"status": "OK"}
+    return RESPONSE_OK
