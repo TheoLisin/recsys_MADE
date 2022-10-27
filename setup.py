@@ -46,6 +46,8 @@ setuptools.setup(
         "pymysql",
         "uvicorn",
         "Jinja2",
+        "jose",
+        "python-multipart",
     ],
     extras_require={
         "dev": [
