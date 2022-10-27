@@ -25,15 +25,6 @@ class User(Base):
         {"mariadb_charset": "utf8mb4", "mariadb_collate": "utf8mb4_general_ci"},
     )
 
-    def set_pwd(self, password: str) -> None:
-        bpass = bytes(password, "UTF-8")
-        salt = bcrypt.gensalt()
-        self.pwdhash = bcrypt.hashpw(bpass, salt)
-
-    def compare_pwd_hashes(self, password: str) -> bool:
-        bpass = bytes(password, "UTF-8")
-        return bcrypt.checkpw(bpass, self.pwdhash)
-
 
 class ArticleAuthor(Base):
     """Article-Author association model."""
