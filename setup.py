@@ -38,7 +38,9 @@ setuptools.setup(
         "bertopic",
         "gensim",
         "contextualized-topic-models",
-        "typer"
+        "bokeh",
+        "mycolorpy",
+        "typer",
         "sqlalchemy",
         "fastparquet",
         "psycopg2-binary",
