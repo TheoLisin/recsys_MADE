@@ -14,6 +14,7 @@ from api.routers import (
     users,
     venues,
 )
+from api.endpoints import auth
 
 app = FastAPI()
 
@@ -25,6 +26,7 @@ app.include_router(keywords.router)
 app.include_router(references.router)
 app.include_router(users.router)
 app.include_router(venues.router)
+app.include_router(auth.router)
 
 app.mount("/static", StaticFiles(directory="src/static"), name="static")
 
