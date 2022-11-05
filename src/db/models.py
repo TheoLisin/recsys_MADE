@@ -1,6 +1,4 @@
 """Tables representations in SQLAlchemy."""
-import bcrypt
-
 from db.utils import Pows
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, ForeignKey, Integer, String, Index, Boolean
@@ -138,7 +136,7 @@ class Article(Base):
     )
 
     authors = relationship(
-        "Author", secondary="article_author", back_populates="articles"
+        "Author", secondary="article_author", back_populates="articles",
     )
 
     keywords = relationship(
@@ -149,5 +147,6 @@ class Article(Base):
 
     __table_args__ = (
         Index("article_ind", id),
+        Index("year_ind", year),
         {"mariadb_charset": "utf8mb4", "mariadb_collate": "utf8mb4_general_ci"},
     )
