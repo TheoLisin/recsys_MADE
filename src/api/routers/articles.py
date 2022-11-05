@@ -1,10 +1,11 @@
 from api import schemas
 from api.constants import RESPONSE_OK
+from api.crud.crud_article import YearFilter, AuthorNameFilter, get_filtered_article
 
 from db.models import Article
 from db.db_params import get_session
 
-from typing import List
+from typing import List, Optional
 from fastapi import HTTPException, APIRouter
 
 from http import HTTPStatus
@@ -72,3 +73,27 @@ def articles_delete_id(id: int):
         session.delete(article)
         session.commit()
     return RESPONSE_OK
+
+
+@router.get("/search/{page}", response_model=List[schemas.PArticle])
+def filter_article_by_year_author_journal(
+    page: int,
+    year: Optional[int] = None,
+    author_name: Optional[str] = None,
+    journal_name: Optional[str] = None,
+):
+    filters = []
+    if year:
+        filters.append(YearFilter(year))
+
+    if author_name:
+        filters.append(AuthorNameFilter(author_name))
+
+    if not filters:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail="At least one filter parameter must be specified.",
+        )
+
+    with get_session() as active_session:
+        return get_filtered_article(active_session, filters, page)
