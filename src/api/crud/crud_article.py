@@ -13,7 +13,7 @@ class YearFilter(BaseFilter):
         super().__init__(filter_param)
 
     def add_filter(self, query: Query) -> Query:
-        return query.filter(Article.year == self.filter_param, Article.year.isnot(None))
+        return query.filter(Article.year == self.filter_param)
 
 
 class VenueFilter(BaseFilter):
@@ -52,7 +52,7 @@ class AuthorNameFilter(BaseFilter):
                 Author.name.label("name"), ArticleAuthor.id_article.label("id_article"),
             )
             .join(Author)
-            .where(Author.name.contains(self.filter_param))
+            .where(Author.name.ilike(f"%{self.filter_param}%"))
             .cte(name="filter_join")
         )
         return query.join(filter_join, filter_join.c.id_article == Article.id)
