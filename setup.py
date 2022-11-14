@@ -51,6 +51,7 @@ setuptools.setup(
     ],
     extras_require={
         "dev": [
+            "boto3",
             "wemake-python-styleguide",
             "mypy",
             "black",
