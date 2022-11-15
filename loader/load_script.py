@@ -5,7 +5,7 @@ from time import time
 from db.db_params import MSQL_SQLALCHEMY_DATABASE_URL
 
 from db.models import Article, Author, Venue
-from load import Loader
+from loader import Loader
 
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.functions import col, row_number, lit, length
@@ -22,11 +22,6 @@ from modelmappers import (
 
 BASE_PYSPARK_SIZE = 1000000
 BASE_CONNECTION_SIZE = 100000
-
-
-os.environ["java_home"] = "C:\Program Files\Java\jdk-19"
-os.environ["hadoop_home"] = "C:\winutils"
-os.environ["path"] = "%HADOOP_HOME%\bin;" + os.environ["path"]
 
 
 def load_articles(
@@ -99,7 +94,7 @@ def load_kw(
 
 def main():
     MAX_MEMORY = "10g"
-    path_to_parquet = "./loader/data.parquet"
+    path_to_parquet = "./loader/fin_dataset.parquet"
     spark = (
         SparkSession.builder.appName("Python Spark")
         .config("spark.driver.maxResultSize", "5g")
@@ -113,12 +108,14 @@ def main():
     )
 
     spark.conf.set("spark.sql.execution.pyspark.enabled", "true")
-    df = spark.read.parquet(path_to_parquet)
+    df = spark.read.parquet(path_to_parquet).limit(100)
 
     # add id
     mw = Window.partitionBy(lit(1)).orderBy(lit(1))
     df = df.withColumn("id", row_number().over(mw))
 
+    df.write.parquet("loader/test.parquet")
+    return
     engine = create_engine(MSQL_SQLALCHEMY_DATABASE_URL)
     loader = Loader(engine=engine, schema="made_recsys")
 
