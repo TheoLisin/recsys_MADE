@@ -36,7 +36,7 @@ setuptools.setup(
         "wordcloud",
         "sqlalchemy",
         "psycopg2-binary",
-        "mariadb==1.1.3",
+        "mariadb==1.0.11",
         "alembic",
         "python-dotenv",
         "bcrypt",
@@ -46,7 +46,7 @@ setuptools.setup(
         "pymysql",
         "uvicorn",
         "Jinja2",
-        "jose",
+        "python-jose",
         "python-multipart",
     ],
     extras_require={
