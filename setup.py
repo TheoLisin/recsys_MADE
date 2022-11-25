@@ -70,5 +70,5 @@ setuptools.setup(
     package_data={
         "static": ["*.css"],
         "templates": ["*.html"],
-    }
+    },
 )
