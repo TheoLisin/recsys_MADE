@@ -1,13 +1,10 @@
-from itertools import chain
 import pickle
 import pandas as pd
-import json
 
 from numpy import unique
-from typing import Dict, List, Optional, Set, Tuple, Hashable, Any
-from pyspark.sql.functions import col, explode, row_number, udf, lit, create_map
+from typing import Dict, List, Optional, Set, Tuple, Hashable, Any, Generator
+from pyspark.sql.functions import col, explode, row_number, lit, dense_rank
 from pyspark.sql.window import Window
-from pyspark.sql.types import IntegerType
 from pyspark.sql import DataFrame, SparkSession
 
 
@@ -61,7 +58,6 @@ class BaseMap(object):
         cols: List[str] = [],
         add_id: bool = False,
         id_name: str = "id",
-        start_with: int = 1,
     ) -> DataFrame:
         """Make selection with the right arguments.
 
@@ -74,27 +70,43 @@ class BaseMap(object):
         """
         new_df = df
         if add_id:
-            new_df = cls.add_id(df, id_name, start_with)
+            new_df = cls.add_id(df, id_name)
         return new_df.select(*cls.create_args(cols))
 
     @classmethod
-    def add_id(cls, df: DataFrame, name: str = "id", start_with: int = 1) -> DataFrame:
+    def add_id(
+        cls,
+        df: DataFrame,
+        name: str = "id",
+        part_by: Optional[List[str]] = None,
+    ) -> DataFrame:
+        if part_by is not None:
+            # enumerate row with unique values in part_by columns
+            mw = Window.partitionBy(lit(1)).orderBy(part_by)
+            return df.withColumn(name, dense_rank().over(mw))
+
         mw = Window.partitionBy(lit(1)).orderBy(lit(1))
+        # enumerate every row
         return df.withColumn(name, row_number().over(mw))
 
     @classmethod
     def create_dict(
-        cls, df: DataFrame, key_col: str, val_col: str, save: bool = False
+        cls,
+        df: DataFrame,
+        key_col: str,
+        val_col: str,
+        save: bool = False,
     ) -> Dict[Any, Any]:
 
         pd_df = df.select(key_col, val_col).toPandas()
         mapper = {k: v for k, v in zip(pd_df[key_col], pd_df[val_col])}
-        # mapping_exp = create_map([lit(x) for x in chain(*mapper.items())])
 
         if save:
             clsname = cls.__name__
             name = "{cls_name}_{key}_{val}".format(
-                cls_name=clsname, key=key_col, val=val_col
+                cls_name=clsname,
+                key=key_col,
+                val=val_col,
             )
             save_path = "./loader/{name}.p".format(name=name)
 
@@ -142,7 +154,9 @@ class BaseMap(object):
             }
         )
         sc_mapper = session.createDataFrame(df_mapper)
-        return df.join(sc_mapper, df[col_to_apply] == sc_mapper["key"], "left").drop("key")
+        return df.join(sc_mapper, df[col_to_apply] == sc_mapper["key"], "left").drop(
+            "key",
+        )
 
 
 class BasePandasProc(object):
