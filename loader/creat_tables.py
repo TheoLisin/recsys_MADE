@@ -2,7 +2,7 @@ import sys
 
 from pathlib import Path
 from pyspark.sql import DataFrame, SparkSession
-from pyspark.sql.functions import row_number, lit
+from pyspark.sql.functions import row_number, lit, dense_rank, col
 from pyspark.sql.window import Window
 from sqlalchemy import inspect
 
@@ -58,7 +58,19 @@ def create_refs(df: DataFrame, spark: SparkSession, refs_fname: str = "fin_refs"
     refs.write.parquet(str(CUR_PATH / f"{refs_fname}.parquet"))
 
 
-def main():
+def create_id_tags(spark: SparkSession, path: str = "./loader/id_tags.parquet"):
+    df = spark.read.parquet(path)
+    part_by = "tags"
+    mw = Window.partitionBy(lit(1)).orderBy(part_by)
+    df = df.withColumn("id_tag", dense_rank().over(mw))
+    ids_art_tag = df.select(col("id").alias("id_article"), "id_tag")
+    id_tag = df.select(col("id_tag").alias("id"), col("tags").alias("tag")).distinct()
+
+    ids_art_tag.write.parquet(str(CUR_PATH / "fin_art_tag.parquet"))
+    id_tag.write.parquet(str(CUR_PATH / "fin_tag.parquet"))
+
+
+def main(create_tags: bool = False):
 
     path_to_parquet = "./loader/fin_dataset.parquet"
     spark = (
@@ -74,20 +86,25 @@ def main():
     )
 
     spark.conf.set("spark.sql.execution.pyspark.enabled", "true")
-    df = spark.read.parquet(path_to_parquet)
-    # add id
-    mw = Window.partitionBy(lit(1)).orderBy(lit(1))
-    df = df.withColumn("id", row_number().over(mw))
 
-    sys.stdout.write("Create user, author, coauth tables.\n")
-    create_user_auth(df)
-    sys.stdout.write("Create vanues table.\n")
-    create_venues(df)
-    sys.stdout.write("Create articles table.\n")
-    create_articles(df, spark)
-    sys.stdout.write("Create references table.\n")
-    create_refs(df, spark)
+    if create_tags:
+        sys.stdout.write("Create article-tag tables.\n")
+        create_id_tags(spark)
+    else:
+        df = spark.read.parquet(path_to_parquet)
+        # add id
+        mw = Window.partitionBy(lit(1)).orderBy(lit(1))
+        df = df.withColumn("id", row_number().over(mw))
+
+        sys.stdout.write("Create user, author, coauth tables.\n")
+        create_user_auth(df)
+        sys.stdout.write("Create vanues table.\n")
+        create_venues(df)
+        sys.stdout.write("Create articles table.\n")
+        create_articles(df, spark)
+        sys.stdout.write("Create references table.\n")
+        create_refs(df, spark)
 
 
 if __name__ == "__main__":
-    main()
+    main(True)
