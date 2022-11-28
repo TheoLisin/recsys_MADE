@@ -26,6 +26,7 @@ setuptools.setup(
     ],
     python_requires=">=3.8",
     install_requires=[
+        "architect",
         "matplotlib",
         "pandas",
         "pyspark",
@@ -70,5 +71,5 @@ setuptools.setup(
     package_data={
         "static": ["*.css"],
         "templates": ["*.html"],
-    }
+    },
 )

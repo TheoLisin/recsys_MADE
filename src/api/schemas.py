@@ -57,7 +57,7 @@ class PArticleBase(BaseModel):
     id_venue: Optional[int]
     old_id: Optional[str] = None
     title: Optional[str] = None
-    pub_year: Optional[str] = None
+    year: Optional[str] = None
     n_citation: Optional[int] = None
     page_start: Optional[int] = None
     page_end: Optional[int] = None
