@@ -112,14 +112,6 @@ class Tag(Base):
     )
 
 
-@architect.install(
-    "partition",
-    type="range",
-    subtype="integer",
-    constraint="1",
-    column="id_tag",
-    db=SYNC_SQLALCHEMY_DATABASE_URL,
-)
 class ArticleTag(Base):
     """Article-Author association model."""
 
