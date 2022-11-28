@@ -34,6 +34,13 @@ def drop_duplicates(df: DataFrame):
     return df.drop_duplicates()
 
 
+def take_half_part(df: DataFrame, col_name: str, less: bool = True) -> DataFrame:
+    half = df.count() // 2
+    if less:
+        return df.select("*").where(col(col_name) < half)
+    return df.select("*").where(col(col_name) >= half)
+
+
 def load_to_sql(
     spark: SparkSession,
     dbtable: str,
@@ -56,6 +63,7 @@ def load_to_sql(
         .option("dbtable", dbtable)
         .option("user", DB_USER)
         .option("password", DB_PASSWORD)
+        .option("batchsize", 2000)
         .save()
     )
 
@@ -69,7 +77,7 @@ def main():
         .config("spark.network.timeout", "3300s")
         .config("spark.worker.timeout", "120s")
         .config("spark.worker.memory", MAX_MEMORY)
-        .config("spark.executor.heartbeatInterval", "3200s")
+        .config("spark.executor.heartbeatInterval", "330s")
         .config("spark.jars", JDBC_PG_DRIVER_PATH)
         .getOrCreate()
     )
@@ -77,7 +85,23 @@ def main():
     spark.conf.set("spark.sql.execution.pyspark.enabled", "true")
 
     load_to_sql(spark, dbtable='"venues"', input_file="fin_venues.parquet")
-    load_to_sql(spark, dbtable='"articles"', input_file="fin_articles.parquet")
+    logger.info("Load first part.")
+    load_to_sql(
+        spark,
+        dbtable='"articles"',
+        input_file="fin_articles.parquet",
+        preload_func=take_half_part,
+        col_name="id",
+    )
+    logger.info("Load second part.")
+    load_to_sql(
+        spark,
+        dbtable='"articles"',
+        input_file="fin_articles.parquet",
+        preload_func=take_half_part,
+        col_name="id",
+        less=False,
+    )
     load_to_sql(spark, dbtable='"users"', input_file="fin_users.parquet")
     load_to_sql(spark, dbtable='"authors"', input_file="fin_authors.parquet")
     load_to_sql(
@@ -100,7 +124,7 @@ def main():
         preload_func=cast_type,
         **cast_args,
     )
-    load_to_sql(spark, dbtable="tags", input_file="fin_tag.parquet")
+    load_to_sql(spark, dbtable='"tags"', input_file="fin_tag.parquet")
     load_to_sql(
         spark,
         dbtable='"article_tags"',
