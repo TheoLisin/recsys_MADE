@@ -76,26 +76,26 @@ def main():
 
     spark.conf.set("spark.sql.execution.pyspark.enabled", "true")
 
-    load_to_sql(spark, dbtable="venues", input_file="fin_venues.parquet")
-    load_to_sql(spark, dbtable="articles", input_file="fin_articles.parquet")
-    load_to_sql(spark, dbtable="users", input_file="fin_users.parquet")
-    load_to_sql(spark, dbtable="authors", input_file="fin_authors.parquet")
+    load_to_sql(spark, dbtable='"venues"', input_file="fin_venues.parquet")
+    load_to_sql(spark, dbtable='"articles"', input_file="fin_articles.parquet")
+    load_to_sql(spark, dbtable='"users"', input_file="fin_users.parquet")
+    load_to_sql(spark, dbtable='"authors"', input_file="fin_authors.parquet")
     load_to_sql(
         spark,
-        dbtable="coauthors",
+        dbtable='"coauthors"',
         input_file="fin_coauths.parquet",
         preload_func=drop_duplicates,
     )
     load_to_sql(
         spark,
-        dbtable="article_author",
+        dbtable='"article_author"',
         input_file="fin_auth_article.parquet",
         preload_func=drop_duplicates,
     )
     cast_args = {"str_col": "id_what", "str_type": "int"}
     load_to_sql(
         spark,
-        dbtable='"references"',
+        dbtable='"art_references"',
         input_file="fin_refs.parquet",
         preload_func=cast_type,
         **cast_args,
@@ -103,7 +103,7 @@ def main():
     load_to_sql(spark, dbtable="tags", input_file="fin_tag.parquet")
     load_to_sql(
         spark,
-        dbtable="article_tags",
+        dbtable='"article_tags"',
         input_file="fin_art_tag.parquet",
         preload_func=drop_duplicates,
     )
