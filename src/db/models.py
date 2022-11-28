@@ -93,7 +93,7 @@ class Venue(Base):
 class Reference(Base):
     """Where and what articles was used."""
 
-    __tablename__ = "references"
+    __tablename__ = "art_references"
     id_where = Column(Integer, ForeignKey("articles.id"), primary_key=True)
     id_what = Column(Integer, ForeignKey("articles.id"), primary_key=True)
 
@@ -156,9 +156,9 @@ class Article(Base):
     fos = Column(String(length=Pows.p10))
     venue = relationship("Venue", back_populates="articles")
 
-    references = relationship(
+    art_references = relationship(
         "Article",
-        secondary="references",
+        secondary="art_references",
         primaryjoin=id == Reference.id_where,
         secondaryjoin=id == Reference.id_what,
         backref="id_where",
