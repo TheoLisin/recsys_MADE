@@ -165,8 +165,8 @@ class Article(Base):
     )
 
     tags = relationship(
-        "Tags",
-        secondary="article_tag",
+        "Tag",
+        secondary="article_tags",
         back_populates="articles",
     )
 
