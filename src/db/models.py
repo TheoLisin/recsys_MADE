@@ -1,5 +1,7 @@
 """Tables representations in SQLAlchemy."""
+
 import architect
+from db.utils import Pows
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import (
     Column,
