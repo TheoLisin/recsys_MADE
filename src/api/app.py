@@ -6,10 +6,9 @@ from fastapi.templating import Jinja2Templates
 
 from api.routers import (
     article_authors,
-    article_keywords,
+    analytics,
     articles,
     authors,
-    keywords,
     references,
     users,
     venues,
@@ -25,6 +24,7 @@ app.include_router(references.router)
 app.include_router(users.router)
 app.include_router(venues.router)
 app.include_router(auth.router)
+app.include_router(analytics.router)
 
 app.mount("/static", StaticFiles(directory="src/static"), name="static")
 
@@ -32,8 +32,8 @@ templates = Jinja2Templates(directory="src/templates")
 
 
 @app.get("/")
-def hello_world():
-    return {"message": "Hello World"}
+def to_docs():
+    return RedirectResponse(url="/docs")
 
 
 @app.get("/login", include_in_schema=False, response_class=HTMLResponse)
