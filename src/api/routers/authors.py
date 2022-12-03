@@ -1,5 +1,6 @@
 from api import schemas
 from api.constants import RESPONSE_OK
+from api.crud.crud_authors import author_top_tag
 
 from db.models import Author
 from db.db_params import get_session
@@ -15,10 +16,10 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=List[schemas.PAuthor])
-def authors_get():
-    with get_session() as session:
-        return session.query(Author).all()
+# @router.get("/", response_model=List[schemas.PAuthor])
+# def authors_get():
+#     with get_session() as session:
+#         return session.query(Author).all()
 
 
 @router.post("/", response_model=schemas.PAuthor)
@@ -39,7 +40,8 @@ def authors_get_id(id: int):
         author = session.query(Author).filter(Author.id == id).first()
         if author is None:
             raise HTTPException(
-                status_code=HTTPStatus.NOT_FOUND, detail="Author with the given ID was not found"
+                status_code=HTTPStatus.NOT_FOUND,
+                detail="Author with the given ID was not found",
             )
     return schemas.PAuthor.from_orm(author)
 
@@ -51,7 +53,8 @@ def authors_put_id(id: int, author: schemas.PAuthorCreate):
         author = session.query(Author).filter(Author.id == id).first()
         if author is None:
             raise HTTPException(
-                status_code=HTTPStatus.NOT_FOUND, detail="Author with the given ID was not found"
+                status_code=HTTPStatus.NOT_FOUND,
+                detail="Author with the given ID was not found",
             )
     return RESPONSE_OK
 
@@ -63,7 +66,8 @@ def authors_delete_id(id: int):
         author = session.query(Author).filter(Author.id == id).first()
         if author is None:
             raise HTTPException(
-                status_code=HTTPStatus.NOT_FOUND, detail="Author with the given ID was not found"
+                status_code=HTTPStatus.NOT_FOUND,
+                detail="Author with the given ID was not found",
             )
         session.delete(author)
         session.commit()
