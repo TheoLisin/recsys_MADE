@@ -1,6 +1,13 @@
 from api import schemas
 from api.constants import RESPONSE_OK
-from api.crud.crud_article import YearFilter, AuthorNameFilter, get_filtered_article
+from api.crud.crud_article import (
+    YearFilter,
+    AuthorNameFilter,
+    VenueFilter,
+    TagFilter,
+    get_filtered_article,
+)
+from api.crud.crud_base import BaseFilter
 
 from db.models import Article
 from db.db_params import get_session
@@ -81,13 +88,20 @@ def filter_article_by_year_author_journal(
     year: Optional[int] = None,
     author_name: Optional[str] = None,
     journal_name: Optional[str] = None,
+    tag: Optional[str] = None,
 ):
-    filters = []
+    filters: List[BaseFilter] = []
     if year:
         filters.append(YearFilter(year))
 
     if author_name:
         filters.append(AuthorNameFilter(author_name))
+
+    if journal_name:
+        filters.append(VenueFilter(journal_name))
+
+    if tag:
+        filters.append(TagFilter(tag))
 
     if not filters:
         raise HTTPException(

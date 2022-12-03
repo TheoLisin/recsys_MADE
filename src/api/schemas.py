@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, List, Optional
 from pydantic import BaseModel
 
 
@@ -10,7 +10,6 @@ class PUserBase(BaseModel):
 
 
 class PUserCreate(PUserBase):
-
     class Config:
         orm_mode = True
 
@@ -38,8 +37,13 @@ class PAuthorBase(BaseModel):
     homepage: Optional[str] = None
 
 
-class PAuthorCreate(PAuthorBase):
+class PAuthorTop(BaseModel):
+    id_auth: int
+    name: str
+    n_citation: int
 
+
+class PAuthorCreate(PAuthorBase):
     class Config:
         orm_mode = True
 
@@ -72,7 +76,6 @@ class PArticleBase(BaseModel):
 
 
 class PArticleCreate(PArticleBase):
-
     class Config:
         orm_mode = True
 
@@ -97,7 +100,6 @@ class PVenueBase(BaseModel):
 
 
 class PVenueCreate(PVenueBase):
-
     class Config:
         orm_mode = True
 
@@ -116,7 +118,6 @@ class PKeywordBase(BaseModel):
 
 
 class PKeywordCreate(PKeywordBase):
-
     class Config:
         orm_mode = True
 
@@ -153,4 +154,3 @@ class PReference(BaseModel):
 
     class Config:
         orm_mode = True
-
