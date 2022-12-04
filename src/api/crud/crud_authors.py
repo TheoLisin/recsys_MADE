@@ -1,12 +1,12 @@
 from pyvis.network import Network
 from collections import defaultdict
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any, Dict, List, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import select
-from sqlalchemy import func, desc
+from sqlalchemy import func, desc, and_
 
-from db.models import Article, Author, ArticleAuthor, ArticleTag, Tag, AuthorCoauthor
 from api.crud.crud_base import resp_to_dict
+from db.models import Article, Author, ArticleAuthor, ArticleTag, Tag, AuthorCoauthor
 
 
 def author_top_tag(session: Session, tag: str, top: int = 100) -> List[Dict[str, Any]]:
@@ -55,48 +55,27 @@ def author_top_tag(session: Session, tag: str, top: int = 100) -> List[Dict[str,
 def coauthor_adj_lists(session: Session, id_author: int, depth: int = 2):
     coauths_adj = defaultdict(list)
     to_handle = [id_author]
+    names = {}
     set_of_auths = set()
     cdepth = 0
     coauths_count = 1
+
     while cdepth < depth:
         cur_count = coauths_count
         coauths_count = 0
+
         while cur_count > 0:
             cur_auth_id = to_handle.pop(-1)
-            coauth_list = _unpack_coauths(session, cur_auth_id, id_author)
+            coauth_list, new_names = _unpack_coauths(session, cur_auth_id, id_author)
+            names.update(new_names)
             set_of_auths = set_of_auths.union(coauth_list)
             coauths_adj[cur_auth_id] = coauth_list
             cur_count -= 1
             coauths_count += len(coauth_list)
             to_handle.extend(coauth_list)
         cdepth += 1
-    names = _get_names(session, [id_author], None)
-    names = _get_names(session, set_of_auths, names)
+
     return coauths_adj, names
-
-
-def _unpack_coauths(session: Session, id_auth: int, root_id: int) -> List[int]:
-    coaths = session.execute(
-        select(AuthorCoauthor.id_coauth).where(AuthorCoauthor.id_author == id_auth)
-    )
-    return [co[0] for co in coaths if co[0] != root_id]
-
-
-def _get_names(
-    session: Session,
-    ids: Iterable[int],
-    init_dct: Optional[Dict[int, str]] = None,
-) -> Dict[int, str]:
-    if init_dct is None:
-        init_dct = {}
-
-    for id_a in ids:
-        if id_a in init_dct:
-            continue
-        name = session.execute(select(Author.name).where(Author.id == id_a)).first()
-        init_dct[id_a] = name[0]
-
-    return init_dct
 
 
 def create_graph(session: Session, id_author: int, depth: int = 2) -> Network:
@@ -115,3 +94,23 @@ def create_graph(session: Session, id_author: int, depth: int = 2) -> Network:
 
     net.generate_html()
     return net
+
+
+def _unpack_coauths(
+    session: Session,
+    id_auth: int,
+    root_id: int,
+) -> Tuple[List[int], Dict[int, str]]:
+    coauths = (
+        select(
+            AuthorCoauthor.id_coauth,
+            Author.name,
+        )
+        .join(Author, and_(Author.id == AuthorCoauthor.id_coauth))
+        .where(AuthorCoauthor.id_author == id_auth)
+    )
+    coauths_w_names = session.execute(coauths).all()
+    coauths_lst = [ca[0] for ca in coauths_w_names if ca[0] != root_id]
+    names_dct = {ca[0]: ca[1] for ca in coauths_w_names}
+
+    return coauths_lst, names_dct
