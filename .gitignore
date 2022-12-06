@@ -130,6 +130,7 @@ dmypy.json
 
 .vscode
 *.parquet
+*.p
 
 # Miscellaneous
 topics.json
