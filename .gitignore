@@ -132,3 +132,8 @@ dmypy.json
 *.parquet
 *.p
 *.pickle
+
+# Miscellaneous
+topics.json
+*.pkl
+assigned_labels.json
