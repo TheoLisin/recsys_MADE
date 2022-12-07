@@ -49,7 +49,7 @@ def download_data_from_s3_folder(parq_folder: str = PARQ_FOLDER):
     )
 
     # create output dir
-    outpath = OUT_PATH / PARQ_FOLDER
+    outpath = OUT_PATH / parq_folder
     Path(outpath).mkdir(parents=True, exist_ok=True)
 
     # take all files in Prefix folder. Prefix must contain only files.
