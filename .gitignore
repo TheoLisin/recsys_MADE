@@ -132,6 +132,7 @@ dmypy.json
 *.parquet
 *.p
 *.pickle
+models
 
 # Miscellaneous
 topics.json
