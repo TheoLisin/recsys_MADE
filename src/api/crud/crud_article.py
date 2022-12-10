@@ -1,11 +1,14 @@
-from typing import Any, List, Optional
+from typing import Any, Dict, List
 from sqlalchemy.orm import Session, Query
 from sqlalchemy.sql import select
+from sqlalchemy import func, String
+from sqlalchemy.dialects.postgresql import ARRAY
 
 
-from api.crud.crud_base import BaseFilter
+from api.crud.crud_base import BaseFilter, resp_to_dict
 from api.core.api_config import PAGINATION_LIMIT
-from db.models import Article, Author, ArticleAuthor, Venue, ArticleTag, Tag
+from db.models import Article, Author, ArticleAuthor, Venue, ArticleTag, Tag, Reference
+from db.db_params import get_session
 
 
 class YearFilter(BaseFilter):
@@ -100,7 +103,9 @@ class AuthorNameFilter(BaseFilter):
 
 
 def get_filtered_article(
-    session: Session, filters: List[BaseFilter], page: int
+    session: Session,
+    filters: List[BaseFilter],
+    page: int,
 ) -> List[Article]:
     query = Query(Article, session=session)
     for filter_ in filters:
@@ -109,3 +114,27 @@ def get_filtered_article(
     offset = page * PAGINATION_LIMIT
 
     return query.limit(PAGINATION_LIMIT).offset(offset).all()
+
+
+def get_references(session: Session, id_articles: List[int]) -> List[int]:
+    refs = session.execute(
+        select(Reference.id_what).where(Reference.id_where.in_(id_articles))
+    ).all()
+    return [r[0] for r in refs]
+
+
+def get_art_titile_tag(session: Session, ids: List[int]) -> Dict[str, Any]:
+    tags_agg = func.array_agg(Tag.tag, type_=ARRAY(String)).label("tags")
+    tags = (
+        select(ArticleTag.id_article.label("id"), tags_agg)
+        .join(Tag)
+        .group_by(ArticleTag.id_article)
+        .where(ArticleTag.id_article.in_(ids))
+    ).cte("tags")
+
+    resp = (
+        session.query(Article.id, Article.title, tags.c.tags)
+        .join(tags, Article.id == tags.c.id)
+        .all()
+    )
+    return resp_to_dict(resp, ["id", "title", "tags"])

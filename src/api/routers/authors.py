@@ -1,12 +1,14 @@
+from typing import List
 from api import schemas
 from api.constants import RESPONSE_OK
-from api.crud.crud_authors import author_top_tag
+from api.deps import get_current_user
+from api.crud.crud_authors import get_auth_recommendation
+from api.crud.crud_base import get_random_subset, resp_to_dict
 
-from db.models import Author
+from db.models import Author, Article, ArticleTag, ArticleAuthor, User
 from db.db_params import get_session
 
-from typing import List
-from fastapi import HTTPException, APIRouter
+from fastapi import HTTPException, APIRouter, Depends
 
 from http import HTTPStatus
 
@@ -31,6 +33,30 @@ def authors_post(author: schemas.PAuthorCreate):
         session.commit()
         session.refresh(new_author)
     return schemas.PAuthor.from_orm(new_author)
+
+
+@router.get("/recommend", response_model=List[schemas.PAuthorRec])
+def get_coauth_recommendation(user: User = Depends(get_current_user)):
+
+    if user.author is None:
+        return []
+
+    id_author = user.author.id
+
+    with get_session() as session:
+        recs = get_auth_recommendation(session, id_author)
+        recs_subset = get_random_subset(recs, size=10)
+        resp_dct = resp_to_dict(recs_subset, ["id_author", "n_articles"])
+
+        for pos, auth in enumerate(resp_dct):
+            name = (
+                session.query(Author.name)
+                .filter(Author.id == auth["id_author"])
+                .first()[0]
+            )
+            resp_dct[pos]["name"] = name
+
+    return resp_dct
 
 
 @router.get("/{id}", response_model=schemas.PAuthor)

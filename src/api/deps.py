@@ -33,7 +33,7 @@ def get_current_user(
         raise credentials_exception
 
     with get_session() as active_session:
-        user = get_user_by_id(active_session, userid)
+        user = get_user_by_id(active_session, int(userid))
 
     if user is None:
         raise credentials_exception
