@@ -1,6 +1,5 @@
 from typing import Optional
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
 
 from api.schemas import PUserCreate
 from api.core import security
