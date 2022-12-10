@@ -38,9 +38,15 @@ class PAuthorBase(BaseModel):
 
 
 class PAuthorTop(BaseModel):
-    id_auth: int
+    id_author: int
     name: str
     n_citation: int
+
+
+class PAuthorRec(BaseModel):
+    id_author: int
+    name: str
+    n_articles: int
 
 
 class PAuthorCreate(PAuthorBase):
@@ -85,6 +91,12 @@ class PArticle(PArticleBase):
 
     class Config:
         orm_mode = True
+
+
+class PArticleRec(BaseModel):
+    id: int
+    title: str
+    tags: List[str]
 
 
 class PVenueBase(BaseModel):
@@ -154,3 +166,9 @@ class PReference(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class PUserInfo(BaseModel):
+    user: PUser
+    author: Optional[PAuthor]
+    articles: Optional[List[PArticle]]
