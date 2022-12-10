@@ -8,6 +8,7 @@ from api.crud import crud_user
 from api.core.auth import access_token_response, authenticate
 from api.deps import get_current_user
 from api.core import api_config
+from api.schemas import PUserInfo
 from db.models import User
 from db.db_params import get_session
 
@@ -49,12 +50,18 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()) -> Any:
                 status_code=HTTPStatus.BAD_REQUEST,
                 detail="Incorrect username or password",
             )
-    
+
     return access_token_response(sub=user.id)
 
 
-@router.get("/me", response_model=PUser)
-def read_users_me(current_user: User = Depends(get_current_user)):
-    """Fetch the current logged in user."""
-    user = current_user
-    return user
+@router.get("/me", response_model=PUserInfo)
+def my_articles(user: User = Depends(get_current_user)):
+    # with get_session() as session:
+    if user.author:
+        return {
+            "user": user,
+            "author": user.author,
+            "articles": user.author.articles,
+        }
+
+    return {"user": user, "author": None, "articles": None}
