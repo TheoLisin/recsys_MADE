@@ -1,5 +1,6 @@
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Set
 from sqlalchemy.orm import Query
+from random import sample
 
 
 class BaseFilter(object):
@@ -21,3 +22,9 @@ def resp_to_dict(
             dct_resp[-1][key] = cval
 
     return dct_resp
+
+
+def get_random_subset(cur_set: Set[Any], size: int) -> List[Any]:
+    if size > len(cur_set):
+        return list(cur_set)
+    return sample(cur_set, size)
