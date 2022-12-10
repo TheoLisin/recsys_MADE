@@ -27,7 +27,12 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     login = Column(String(length=Pows.p6))
     pwdhash = Column(String(length=Pows.p6))
-    author = relationship("Author", back_populates="user", uselist=False)
+    author = relationship(
+        "Author",
+        back_populates="user",
+        uselist=False,
+        lazy="subquery",
+    )
     __table_args__ = (Index("login_ind", login),)
 
 
@@ -68,6 +73,7 @@ class Author(Base):
         "Article",
         secondary="article_author",
         back_populates="authors",
+        lazy="subquery",
     )
 
     coauthors = relationship(
