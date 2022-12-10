@@ -1,5 +1,6 @@
 from api import schemas
 from api.constants import RESPONSE_OK
+from api.core.api_config import PAGINATION_LIMIT
 
 from db.models import Venue
 from db.db_params import get_session
@@ -16,9 +17,14 @@ router = APIRouter(
 
 
 @router.get("/", response_model=List[schemas.PVenue])
-def venues_get():
+def venues_get(page: int):
     with get_session() as session:
-        return session.query(Venue).all()
+        return (
+            session.query(Venue)
+            .limit(PAGINATION_LIMIT)
+            .offset((page - 1) * PAGINATION_LIMIT)
+            .all()
+        )
 
 
 @router.post("/", response_model=schemas.PVenue)
@@ -39,7 +45,8 @@ def venues_get_id(id: int):
         venue = session.query(Venue).filter(Venue.id == id).first()
         if venue is None:
             raise HTTPException(
-                status_code=HTTPStatus.NOT_FOUND, detail="Venue with the given ID was not found"
+                status_code=HTTPStatus.NOT_FOUND,
+                detail="Venue with the given ID was not found",
             )
         return schemas.PVenue.from_orm(venue)
 
@@ -51,7 +58,8 @@ def venues_put_id(id: int, venue: schemas.PVenueCreate):
         venue = session.query(Venue).filter(Venue.id == id).first()
         if venue is None:
             raise HTTPException(
-                status_code=HTTPStatus.NOT_FOUND, detail="Venue with the given ID was not found"
+                status_code=HTTPStatus.NOT_FOUND,
+                detail="Venue with the given ID was not found",
             )
     return RESPONSE_OK
 
@@ -63,7 +71,8 @@ def venues_delete_id(id: int):
         venue = session.query(Venue).filter(Venue.id == id).first()
         if venue is None:
             raise HTTPException(
-                status_code=HTTPStatus.NOT_FOUND, detail="Venue with the given ID was not found"
+                status_code=HTTPStatus.NOT_FOUND,
+                detail="Venue with the given ID was not found",
             )
         session.delete(venue)
         session.commit()

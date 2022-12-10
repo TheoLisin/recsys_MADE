@@ -4,6 +4,7 @@ from api.constants import RESPONSE_OK
 from api.deps import get_current_user
 from api.crud.crud_authors import get_auth_recommendation
 from api.crud.crud_base import get_random_subset, resp_to_dict
+from api.core.api_config import PAGINATION_LIMIT
 
 from db.models import Author, Article, ArticleTag, ArticleAuthor, User
 from db.db_params import get_session
@@ -18,10 +19,15 @@ router = APIRouter(
 )
 
 
-# @router.get("/", response_model=List[schemas.PAuthor])
-# def authors_get():
-#     with get_session() as session:
-#         return session.query(Author).all()
+@router.get("/", response_model=List[schemas.PAuthor])
+def authors_get(page: int):
+    with get_session() as session:
+        return (
+            session.query(Author)
+            .limit(PAGINATION_LIMIT)
+            .offset((page - 1) * PAGINATION_LIMIT)
+            .all()
+        )
 
 
 @router.post("/", response_model=schemas.PAuthor)

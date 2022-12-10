@@ -21,6 +21,7 @@ from api.crud.crud_authors import get_author_articles
 from api.crud.crud_base import BaseFilter
 from api.conf_paths import MODELS_PATH
 from api.deps import get_current_user
+from api.core.api_config import PAGINATION_LIMIT
 
 from db.models import Article, User, Author
 from db.db_params import get_session
@@ -34,10 +35,15 @@ router = APIRouter(
 
 # model_article_rec = ArticleRecommendation(MODELS_PATH)
 
-# @router.get("/", response_model=List[schemas.PArticle])
-# def articles_get():
-#     with get_session() as session:
-#         return session.query(Article).all()
+@router.get("/", response_model=List[schemas.PArticle])
+def articles_get(page: int):
+    with get_session() as session:
+        return (
+            session.query(Article)
+            .limit(PAGINATION_LIMIT)
+            .offset((page - 1) * PAGINATION_LIMIT)
+            .all()
+        )
 
 
 @router.post("/", response_model=schemas.PArticle)
