@@ -6,6 +6,7 @@ from sqlalchemy.sql import select
 from sqlalchemy import func, desc, and_
 
 from api.crud.crud_base import resp_to_dict
+
 from db.models import Article, Author, ArticleAuthor, ArticleTag, Tag, AuthorCoauthor
 
 
@@ -49,7 +50,7 @@ def author_top_tag(session: Session, tag: str, top: int = 100) -> List[Dict[str,
     else:
         resp = session.query(auth_cit_name).limit(top).all()
 
-    return resp_to_dict(resp, ["id_auth", "name", "n_citation"])
+    return resp_to_dict(resp, ["id_author", "name", "n_citation"])
 
 
 def coauthor_adj_lists(session: Session, id_author: int, depth: int = 2):
@@ -114,3 +115,68 @@ def _unpack_coauths(
     names_dct = {ca[0]: ca[1] for ca in coauths_w_names}
 
     return coauths_lst, names_dct
+
+
+def get_author_articles(session: Session, id_author: int):
+    arts = (
+        session.query(ArticleAuthor.id_article)
+        .filter(ArticleAuthor.id_author == id_author)
+        .all()
+    )
+    return [atpl[0] for atpl in arts]
+
+
+def get_auth_recommendation(session: Session, id_author: int, max_rank: int = 10):
+    auth_art_count = (
+        select(
+            ArticleAuthor.id_author.label("id_author"),
+            func.count(ArticleAuthor.id_article).label("count"),
+        )
+        .group_by("id_author")
+        .order_by(desc("count"))
+        .cte("auth_art_count")
+    )
+
+    auth_tag = (
+        select(
+            ArticleAuthor.id_author.label("id_author"),
+            ArticleTag.id_tag.label("id_tag"),
+        )
+        .join(ArticleAuthor, ArticleAuthor.id_article == ArticleTag.id_article)
+        .distinct()
+    ).cte("auth_tag")
+
+    auth_tag_num = (
+        select(
+            auth_tag.c.id_tag.label("tag"),
+            auth_tag.c.id_author.label("auth"),
+            auth_art_count.c.count.label("count"),
+        ).join(auth_art_count, auth_art_count.c.id_author == auth_tag.c.id_author)
+    ).cte("auth_tag_num")
+
+    cur_at = select(auth_tag.c.id_tag).where(auth_tag.c.id_author == id_author)
+    auth_tag = session.execute(cur_at).all()
+    tags = [at[0] for at in auth_tag]
+
+    auth_tag_num_cat = select(
+        auth_tag_num.c.tag.label("tag"),
+        auth_tag_num.c.auth.label("auth"),
+        auth_tag_num.c.count.label("count"),
+    ).where(auth_tag_num.c.tag.in_(tags))
+
+    auth_tag_num_cat_part = select(
+        auth_tag_num_cat.c.tag,
+        auth_tag_num_cat.c.auth,
+        auth_tag_num_cat.c.count.label("count"),
+        func.row_number()
+        .over(partition_by=auth_tag_num_cat.c.tag, order_by=desc("count"))
+        .label("rank"),
+    ).cte("auth_tag_num_part")
+
+    possible_coath = session.execute(
+        select("*")
+        .select_from(auth_tag_num_cat_part)
+        .where(auth_tag_num_cat_part.c.rank <= max_rank)
+    ).all()
+
+    return {(pc[1], pc[2]) for pc in possible_coath}
