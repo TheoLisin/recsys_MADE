@@ -3,10 +3,10 @@ from api import schemas
 from api.constants import RESPONSE_OK
 from api.deps import get_current_user
 from api.crud.crud_authors import get_auth_recommendation
-from api.crud.crud_base import get_random_subset, resp_to_dict
+from api.crud.crud_base import get_random_subset
 from api.core.api_config import PAGINATION_LIMIT
 
-from db.models import Author, Article, ArticleTag, ArticleAuthor, User
+from db.models import Author, User
 from db.db_params import get_session
 
 from fastapi import HTTPException, APIRouter, Depends
@@ -50,32 +50,31 @@ def get_coauth_recommendation(user: User = Depends(get_current_user)):
     id_author = user.author.id
 
     with get_session() as session:
-        recs = get_auth_recommendation(session, id_author)
+        recs = get_auth_recommendation(session, id_author=id_author)
         recs_subset = get_random_subset(recs, size=10)
-        resp_dct = resp_to_dict(recs_subset, ["id_author", "n_articles"])
 
-        for pos, auth in enumerate(resp_dct):
+        for pos, auth in enumerate(recs_subset):
             name = (
                 session.query(Author.name)
                 .filter(Author.id == auth["id_author"])
                 .first()[0]
             )
-            resp_dct[pos]["name"] = name
+            recs_subset[pos]["name"] = name
 
-    return resp_dct
+    return recs_subset
 
 
-@router.get("/{id}", response_model=schemas.PAuthor)
+@router.get("/{id}", response_model=schemas.PAuthorInfo)
 def authors_get_id(id: int):
     """Get author by id."""
     with get_session() as session:
-        author = session.query(Author).filter(Author.id == id).first()
+        author: Author = session.query(Author).filter(Author.id == id).first()
         if author is None:
             raise HTTPException(
                 status_code=HTTPStatus.NOT_FOUND,
                 detail="Author with the given ID was not found",
             )
-    return schemas.PAuthor.from_orm(author)
+    return {"author": author, "articles": author.articles}
 
 
 @router.put("/{id}", tags=["Authors"])
