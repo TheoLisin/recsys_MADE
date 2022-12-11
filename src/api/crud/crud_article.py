@@ -8,7 +8,6 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from api.crud.crud_base import BaseFilter, resp_to_dict
 from api.core.api_config import PAGINATION_LIMIT
 from db.models import Article, Author, ArticleAuthor, Venue, ArticleTag, Tag, Reference
-from db.db_params import get_session
 
 
 class YearFilter(BaseFilter):
@@ -40,16 +39,16 @@ class VenueFilter(BaseFilter):
         Returns:
             Query: _description_
         """
-        filter_join = (
+        venue_filter_join = (
             select(
                 Venue.name_d.label("name"),
                 Article.id.label("id_article"),
             )
             .join(Venue)
             .where(Venue.name_d.ilike(f"%{self.filter_param}%"))
-            .cte(name="filter_join")
+            .cte(name="venue_filter_join")
         )
-        return query.filter(filter_join.c.id_article == Article.id)
+        return query.filter(venue_filter_join.c.id_article == Article.id)
 
 
 class TagFilter(BaseFilter):
@@ -73,16 +72,16 @@ class TagFilter(BaseFilter):
         Returns:
             Query: _description_
         """
-        filter_join = (
+        tag_filter_join = (
             select(
                 Tag.tag.label("tag"),
                 ArticleTag.id_article.label("id_article"),
             )
             .join(Tag)
             .where(Tag.tag.ilike(f"{self.filter_param}"))
-            .cte(name="filter_join")
+            .cte(name="tag_filter_join")
         )
-        return query.filter(filter_join.c.id_article == Article.id)
+        return query.filter(tag_filter_join.c.id_article == Article.id)
 
 
 class AuthorNameFilter(BaseFilter):
@@ -90,16 +89,16 @@ class AuthorNameFilter(BaseFilter):
         super().__init__(filter_param)
 
     def add_filter(self, query: Query) -> Query:
-        filter_join = (
+        auth_filter_join = (
             select(
                 Author.name.label("name"),
                 ArticleAuthor.id_article.label("id_article"),
             )
             .join(Author)
             .where(Author.name.ilike(f"%{self.filter_param}%"))
-            .cte(name="filter_join")
+            .cte(name="auth_filter_join")
         )
-        return query.join(filter_join, filter_join.c.id_article == Article.id)
+        return query.join(auth_filter_join, auth_filter_join.c.id_article == Article.id)
 
 
 def get_filtered_article(
@@ -111,7 +110,7 @@ def get_filtered_article(
     for filter_ in filters:
         query = filter_.add_filter(query)
 
-    offset = page * PAGINATION_LIMIT
+    offset = (page - 1) * PAGINATION_LIMIT
 
     return query.limit(PAGINATION_LIMIT).offset(offset).all()
 
@@ -123,7 +122,7 @@ def get_references(session: Session, id_articles: List[int]) -> List[int]:
     return [r[0] for r in refs]
 
 
-def get_art_titile_tag(session: Session, ids: List[int]) -> Dict[str, Any]:
+def get_art_titile_tag(session: Session, ids: List[int]) -> List[Dict[str, Any]]:
     tags_agg = func.array_agg(Tag.tag, type_=ARRAY(String)).label("tags")
     tags = (
         select(ArticleTag.id_article.label("id"), tags_agg)
