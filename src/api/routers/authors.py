@@ -74,7 +74,7 @@ def authors_get_id(id: int):
                 status_code=HTTPStatus.NOT_FOUND,
                 detail="Author with the given ID was not found",
             )
-    return {"author": author, "articles": author.articles}
+    return {"id_author": author.id, "author": author, "articles": author.articles}
 
 
 @router.put("/{id}", tags=["Authors"])

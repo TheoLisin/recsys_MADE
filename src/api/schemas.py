@@ -105,6 +105,7 @@ class PArticleRec(BaseModel):
 
 
 class PAuthorInfo(BaseModel):
+    id_author: int
     author: PAuthor
     articles: List[PArticle]
 
