@@ -102,6 +102,8 @@ class PArticleRec(BaseModel):
     id: int
     title: str
     tags: List[str]
+    year: str
+    abstract: str
 
 
 class PAuthorInfo(BaseModel):

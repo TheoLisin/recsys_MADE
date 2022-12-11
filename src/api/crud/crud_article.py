@@ -132,8 +132,8 @@ def get_art_titile_tag(session: Session, ids: List[int]) -> List[Dict[str, Any]]
     ).cte("tags")
 
     resp = (
-        session.query(Article.id, Article.title, tags.c.tags)
+        session.query(Article.id, Article.title, tags.c.tags, Article.year, Article.abstract)
         .join(tags, Article.id == tags.c.id)
         .all()
     )
-    return resp_to_dict(resp, ["id", "title", "tags"])
+    return resp_to_dict(resp, ["id", "title", "tags", "year", "abstract"])
