@@ -4,7 +4,7 @@ from api.crud.crud_authors import author_top_tag, create_graph
 from db.db_params import get_session
 from db.models import Tag
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 router = APIRouter(prefix="/analytics")
