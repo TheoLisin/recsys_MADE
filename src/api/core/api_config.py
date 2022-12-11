@@ -12,6 +12,7 @@ API_V1_STR: str = "/api"
 JWT_SECRET: str = environ.get("JWT_SECRET") or "TEST_SECRET_DO_NOT_USE_IN_PROD"
 ALGORITHM: str = "HS256"
 PAGINATION_LIMIT: int = 10
+CACHE_EXPIRE: int = 60 * 60 * 2
 
 ACCESS_TOKEN_EXPIRE_MINUTES: int = 0
 
@@ -21,5 +22,5 @@ if token_exp is not None and token_exp.isnumeric():
     ACCESS_TOKEN_EXPIRE_MINUTES = int(token_exp)
 else:
     logger.warning("ACCESS_TOKEN_EXPIRE_MINUTES is not specified")
-    logger.warning("or is not in a valid format. Using default: 8 days.")
-    ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 8  # 8 days
+    logger.warning("or is not in a valid format. Using default: 2 hours.")
+    ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 2  # 2 hours
