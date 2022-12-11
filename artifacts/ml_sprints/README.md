@@ -18,23 +18,26 @@
 - Модель классификации Kitty [здесь](https://nbviewer.org/github/TheoLisin/recsys_MADE/blob/ml/src/ml/topic_modelling/Kitty.ipynb) и [здесь](../../src/ml/topic_modelling/contextualized_tm/) (fin)
 - Ссылка на папку спринта в репозитории [здесь](https://github.com/TheoLisin/recsys_MADE/tree/main/src/ml/topic_modelling)
 - Ссылка на Яндекс.диск с моделями [здесь](https://disk.yandex.ru/d/WmVjWdzfK3Xvpw)
-- Более подробное описание проделанной работы в течение спринта [здесь](../step_2)
+- Более подробное описание проделанной работы по спринту [здесь](../step_2)
 
 
 ## Спринт 3
 
-Начиная с этого спринта, данные загружаются на S3.
+Начиная с этого спринта, данные загружаются в S3.
 
 - Скрипт для `train/test` разделения [здесь](https://github.com/TheoLisin/recsys_MADE/tree/ml/src/ml/data_splitting)
 - Отчёт по метрикам [здесь](https://github.com/TheoLisin/recsys_MADE/blob/ml/artifacts/step_3/metrics.pdf)
 - Более подробное описание проделанной работы по спринту [здесь](../step_3/)
+
 
 ## Спринт 4
 
 - Ссылка на ноутбуки с имплементацией и примерным `API` модели рекомендации соавторов [здесь](https://github.com/TheoLisin/recsys_MADE/tree/ml/src/ml/coauthor_recommendation)
 - Более подробное описание проделанной работы по спринту [здесь](../step_4/)
 
+
 ## Спринт 5
+
 
 
 ## Спринт 6
