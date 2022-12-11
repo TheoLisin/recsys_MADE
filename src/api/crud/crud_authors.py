@@ -6,6 +6,7 @@ from sqlalchemy.sql import select
 from sqlalchemy import func, desc, and_
 
 from api.crud.crud_base import resp_to_dict
+from api.core.caching import cache, author_fkey_formatter
 
 from db.models import Article, Author, ArticleAuthor, ArticleTag, Tag, AuthorCoauthor
 
@@ -16,7 +17,7 @@ def author_top_tag(session: Session, tag: str, top: int = 100) -> List[Dict[str,
         select(ArticleTag.id_article)
         .where(
             ArticleTag.id_tag.in_(
-                select(Tag.id.label("tag_id")).where(Tag.tag.ilike(f"{tag}"))
+                select(Tag.id.label("tag_id")).where(Tag.tag == tag)
             )
         )
         .cte("art_tag")
@@ -126,7 +127,8 @@ def get_author_articles(session: Session, id_author: int):
     return [atpl[0] for atpl in arts]
 
 
-def get_auth_recommendation(session: Session, id_author: int, max_rank: int = 10):
+@cache(author_fkey_formatter, "id_author", "coauth_recs")
+def get_auth_recommendation(session: Session, *, id_author: int, max_rank: int = 10):
     auth_art_count = (
         select(
             ArticleAuthor.id_author.label("id_author"),
@@ -179,4 +181,5 @@ def get_auth_recommendation(session: Session, id_author: int, max_rank: int = 10
         .where(auth_tag_num_cat_part.c.rank <= max_rank)
     ).all()
 
-    return {(pc[1], pc[2]) for pc in possible_coath}
+    resp_set = {(pc[1], pc[2]) for pc in possible_coath}
+    return resp_to_dict(resp_set, ["id_author", "n_articles"])
