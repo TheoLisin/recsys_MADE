@@ -28,6 +28,10 @@ def author_fkey_formatter(author_id: int) -> str:
     return "author_{aid}".format(aid=author_id)
 
 
+def analytics_tag_fkey_formatter(tag: str) -> str:
+    return "top_tag_{tag}".format(tag=tag)
+
+
 def cache_response(
     uniq_id: int,
     fkey_formatter: Callable[[int], str],

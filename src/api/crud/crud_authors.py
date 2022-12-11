@@ -6,12 +6,13 @@ from sqlalchemy.sql import select
 from sqlalchemy import func, desc, and_
 
 from api.crud.crud_base import resp_to_dict
-from api.core.caching import cache, author_fkey_formatter
+from api.core.caching import cache, author_fkey_formatter, analytics_tag_fkey_formatter
 
 from db.models import Article, Author, ArticleAuthor, ArticleTag, Tag, AuthorCoauthor
 
 
-def author_top_tag(session: Session, tag: str, top: int = 100) -> List[Dict[str, Any]]:
+@cache(analytics_tag_fkey_formatter, "tag", "data")
+def author_top_tag(session: Session, *, tag: str, top: int = 100) -> List[Dict[str, Any]]:
 
     art_tag = (
         select(ArticleTag.id_article)
