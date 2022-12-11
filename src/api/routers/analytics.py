@@ -4,7 +4,7 @@ from api.crud.crud_authors import author_top_tag, create_graph
 from db.db_params import get_session
 from db.models import Tag
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 router = APIRouter(prefix="/analytics")
@@ -14,7 +14,9 @@ router = APIRouter(prefix="/analytics")
 def top_authors(tag_part: str, top: int = 100):
     with get_session() as session:
         tag = session.query(Tag).where(Tag.tag.ilike(f"%{tag_part}%")).first()
-        resp = author_top_tag(session, tag.tag, top)
+        if tag is None:
+            return {"tag": tag_part, "data": []}
+        resp = author_top_tag(session, tag=tag.tag, top=top)
     return {"tag": tag.tag, "data": resp}
 
 
