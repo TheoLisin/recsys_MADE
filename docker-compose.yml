@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.front
+    ports:
+      - 1245:3000
+  
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.ligma
+    hostname: apihost 

@@ -1,0 +1,10 @@
+FROM node:lts-slim
+
+COPY ./frontend /frontend
+WORKDIR /frontend
+
+RUN npm install -g serve
+RUN yarn
+RUN yarn build
+
+ENTRYPOINT [ "serve", "-s", "build" ]

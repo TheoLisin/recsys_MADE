@@ -1,0 +1,14 @@
+FROM python:3.9.6-slim
+
+COPY ./src /app/src
+COPY ./setup.cfg /app
+COPY ./setup.py /app
+COPY ./.env /app
+COPY ./README.md /app
+
+
+WORKDIR /app
+
+RUN pip install -e .
+
+ENTRYPOINT [ "recsys-api", "--host", "0.0.0.0", "--port", "5555" ]
