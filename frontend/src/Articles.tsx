@@ -2,7 +2,7 @@ import { useDLE } from "@rest-hooks/react";
 import { Button, List, Pagination, Skeleton } from "antd";
 import { FC, useCallback, useState } from "react";
 
-import { ArticleResource, ArticleSchema, ArticleSearchResource } from "./api/Article";
+import { ArticleAllResource, ArticleSchema, ArticleSearchResource } from "./api/Article";
 import { FIRST_PAGE_INDEX, PAGE_SIZE } from "./api/consts";
 import { ArticlesFilters } from "./ArticlesFilters";
 import { useAppContext } from "./state/AppContext";
@@ -57,12 +57,12 @@ export type Filters = {
     tag?: string
 }
 
-type ResourceType = typeof ArticleResource | typeof ArticleSearchResource;
+type ResourceType = typeof ArticleAllResource | typeof ArticleSearchResource;
 
 export const Articles: FC = () => {
     const [page, setPage] = useState(FIRST_PAGE_INDEX);
 
-    const [articlesResource, setArticlesResource] = useState<ResourceType>(ArticleResource)
+    const [articlesResource, setArticlesResource] = useState<ResourceType>(ArticleAllResource)
     const [filters, setFilters] = useState<Filters>({})
 
     const { data, loading, error } = useDLE(articlesResource.getList, { page: page, ...filters });
@@ -76,7 +76,7 @@ export const Articles: FC = () => {
             setPage(FIRST_PAGE_INDEX);
         }
         else {
-            setArticlesResource(ArticleResource)
+            setArticlesResource(ArticleAllResource)
             setFilters({})
             setPage(FIRST_PAGE_INDEX);
         }

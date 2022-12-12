@@ -43,6 +43,12 @@ export const ArticleResource = createResource({
     Endpoint: AuthdEndpoint,
 });
 
+export const ArticleAllResource = createResource({
+    path: '/articles/all/:stub',
+    schema: ArticleSchema,
+    Endpoint: AuthdEndpoint,
+});
+
 export const ArticleSearchResource = createResource({
     path: '/articles/search/:stub',
     schema: ArticleSchema,
