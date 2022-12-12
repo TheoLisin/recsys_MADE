@@ -1,4 +1,4 @@
-FROM node:lts-slim
+FROM node:lts-slim as build-step
 
 COPY ./frontend /frontend
 WORKDIR /frontend
@@ -7,4 +7,7 @@ RUN npm install -g serve
 RUN yarn
 RUN yarn build
 
-ENTRYPOINT [ "serve", "-s", "build" ]
+FROM caddy:alpine
+EXPOSE 80
+EXPOSE 443
+COPY --from=build-step /frontend/build /usr/share/caddy

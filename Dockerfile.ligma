@@ -1,14 +1,16 @@
 FROM python:3.9.6-slim
 
+RUN apt update && apt install --no-install-recommends -y build-essential
+
 COPY ./src /app/src
 COPY ./setup.cfg /app
 COPY ./setup.py /app
 COPY ./.env /app
 COPY ./README.md /app
 
-
 WORKDIR /app
 
 RUN pip install -e .
+EXPOSE 5555
 
 ENTRYPOINT [ "recsys-api", "--host", "0.0.0.0", "--port", "5555" ]

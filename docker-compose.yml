@@ -6,10 +6,20 @@ services:
       context: .
       dockerfile: Dockerfile.front
     ports:
-      - 1245:3000
+      - 1245:80
+    networks:
+      - app_network
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
   
   api:
     build:
       context: .
       dockerfile: Dockerfile.ligma
-    hostname: apihost 
+    container_name: apihost
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
