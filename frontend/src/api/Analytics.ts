@@ -37,3 +37,5 @@ const AnalyticsTopResourceBase = new RestEndpoint({
 export const AnalyticsTopResource = AnalyticsTopResourceBase.extend({
     searchParams: {} as { tag_part?: string },
 });
+
+export const GRAPH_API_URL: string = `${PREFIX}/analytics/graph`;
