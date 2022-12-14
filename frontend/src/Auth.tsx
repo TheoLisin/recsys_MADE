@@ -59,6 +59,8 @@ const AuthForm: React.FC<Props> = (props: Props) => {
         if (state.authState === "LOGGED_OUT") {
             setToken(undefined);
             dispatch({type: ActionKind.WaitForLogin})
+        } else if (state.authState === "BEFORE_LOGIN") {
+            setModalOpen(true);
         }
     }, [state, setToken, dispatch])
 
@@ -67,6 +69,7 @@ const AuthForm: React.FC<Props> = (props: Props) => {
         if (authToken) {
             token.set(authToken)
             dispatch({ type: ActionKind.Login })
+            setModalOpen(false)
         }
         else {
             resetEntireStore();
