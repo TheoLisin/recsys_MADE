@@ -23,7 +23,7 @@ from api.conf_paths import MODELS_PATH
 from api.deps import get_current_user
 from api.core.api_config import PAGINATION_LIMIT
 
-from db.models import Article, User, Author
+from db.models import Article, User
 from db.db_params import get_session
 from ml.article_recommendation_lda.article_recommendation import ArticleRecommendation
 
@@ -33,7 +33,8 @@ router = APIRouter(
     tags=["Articles"],
 )
 
-# model_article_rec = ArticleRecommendation(MODELS_PATH)
+model_article_rec = ArticleRecommendation(MODELS_PATH)
+
 
 @router.get("/all", response_model=List[schemas.PArticle])
 def articles_get(page: int):
@@ -91,22 +92,22 @@ def filter_article_by_year_author_journal(
 @router.get("/recommend", response_model=List[schemas.PArticleRec])
 def get_art_recommendation(page: int, user: User = Depends(get_current_user)):
     with get_session() as session:
-        # if user.author:
-        #     auth_id = user.author.id
-        #     arts = get_author_articles(session, auth_id)
-        #     refs = get_references(session, arts)
+        if user.author:
+            auth_id = user.author.id
+            arts = get_author_articles(session, auth_id)
+            refs = get_references(session, arts)
 
-        #     if (page < 0) or (page >= len(refs)):
-        #         raise HTTPException(
-        #             status_code=HTTPStatus.NOT_FOUND,
-        #             detail="Page not found",
-        #         )
+            if (page < 0) or (page >= len(refs)):
+                raise HTTPException(
+                    status_code=HTTPStatus.NOT_FOUND,
+                    detail="Page not found",
+                )
 
-            # rec_articles_np = model_article_rec.get_recommendations(refs[page])
-        # else:
-        max_art = session.query(func.max(Article.id)).first()[0]
-        seed(user.id + page)
-        rec_articles_np = randint(1, max_art, size=10)
+            rec_articles_np = model_article_rec.get_recommendations(refs[page])
+        else:
+            max_art = session.query(func.max(Article.id)).first()[0]
+            seed(user.id + page)
+            rec_articles_np = randint(1, max_art, size=10)
 
     rec_articles = [int(rec) for rec in rec_articles_np]
     return get_art_titile_tag(session, rec_articles)
