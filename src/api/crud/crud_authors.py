@@ -4,22 +4,30 @@ from typing import Any, Dict, List, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import select
 from sqlalchemy import func, desc, and_
+from api.conf_paths import GRAPH_TEMPLATE
 
 from api.crud.crud_base import resp_to_dict
-from api.core.caching import cache, author_fkey_formatter, analytics_tag_fkey_formatter
+from api.core.caching import (
+    cache,
+    author_fkey_formatter,
+    analytics_tag_fkey_formatter,
+)
 
 from db.models import Article, Author, ArticleAuthor, ArticleTag, Tag, AuthorCoauthor
 
 
 @cache(analytics_tag_fkey_formatter, "tag", "data")
-def author_top_tag(session: Session, *, tag: str, top: int = 100) -> List[Dict[str, Any]]:
+def author_top_tag(
+    session: Session,
+    *,
+    tag: str,
+    top: int = 100,
+) -> List[Dict[str, Any]]:
 
     art_tag = (
         select(ArticleTag.id_article)
         .where(
-            ArticleTag.id_tag.in_(
-                select(Tag.id.label("tag_id")).where(Tag.tag == tag)
-            )
+            ArticleTag.id_tag.in_(select(Tag.id.label("tag_id")).where(Tag.tag == tag))
         )
         .cte("art_tag")
     )
@@ -55,7 +63,8 @@ def author_top_tag(session: Session, *, tag: str, top: int = 100) -> List[Dict[s
     return resp_to_dict(resp, ["id_author", "name", "n_citation"])
 
 
-def coauthor_adj_lists(session: Session, id_author: int, depth: int = 2):
+@cache(author_fkey_formatter, "id_author", "graph_info")
+def coauthor_adj_lists(session: Session, *, id_author: int, depth: int = 2):
     coauths_adj = defaultdict(list)
     to_handle = [id_author]
     names = {}
@@ -77,24 +86,27 @@ def coauthor_adj_lists(session: Session, id_author: int, depth: int = 2):
             coauths_count += len(coauth_list)
             to_handle.extend(coauth_list)
         cdepth += 1
-
-    return coauths_adj, names
+    return {"adj_list": dict(coauths_adj), "names": names}
+    # return coauths_adj, names
 
 
 def create_graph(session: Session, id_author: int, depth: int = 2) -> Network:
-    coauthors, names = coauthor_adj_lists(session, id_author, depth)
+    adj_data = coauthor_adj_lists(session, id_author=id_author, depth=depth)
+    coauthors, names = adj_data["adj_list"], adj_data["names"]
     net = Network()
 
     for id_a in names:
-        if id_a == id_author:
-            net.add_node(id_a, label=names[id_a], color="#ff8cdb")
+        int_ida = int(id_a)
+        if int_ida == id_author:
+            net.add_node(int_ida, label=names[id_a], color="#ff8cdb")
         else:
-            net.add_node(id_a, label=names[id_a], size=10)
+            net.add_node(int_ida, label=names[id_a], size=10)
 
     for ath in coauthors.keys():
         for ca in coauthors[ath]:
-            net.add_edge(ath, ca)
+            net.add_edge(int(ath), ca)
 
+    net.set_template(str(GRAPH_TEMPLATE))
     net.generate_html()
     return net
 
