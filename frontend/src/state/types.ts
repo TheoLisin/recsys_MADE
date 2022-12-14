@@ -1,9 +1,11 @@
 import { ArticleInfo } from "../Article";
+import { GraphInfo } from "../Graph";
 
 export type Page = "TOP" | "ARTICLES" | "RECOMMENDED";
 
 export type StateType = {
     shownArticle: ArticleInfo | undefined,
+    shownGraph: GraphInfo | undefined,
     authState: "SIGN_UP" | "BEFORE_LOGIN" | "LOGGED_IN" | "LOGGED_OUT",
     showUser: boolean,
     shownAuthor: number | undefined,
@@ -17,6 +19,8 @@ export enum ActionKind {
     CloseUserInfo,
     ShowAuthorInfo,
     CloseAuthorInfo,
+    ShowGraph,
+    CloseGraph,
     Login,
     Logout,
     WaitForLogin,
@@ -26,5 +30,5 @@ export enum ActionKind {
 
 export type Action = {
     type: ActionKind;
-    payload?: ArticleInfo | Page | number;
+    payload?: ArticleInfo | Page | number | GraphInfo;
 };

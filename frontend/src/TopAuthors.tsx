@@ -1,6 +1,7 @@
 import { useDLE } from "@rest-hooks/react";
-import { Button, Col, Empty, Form, Input, List, Row, Skeleton, Typography } from "antd";
+import { Button, Col, Empty, Form, Input, List, Row, Skeleton, Tooltip, Typography } from "antd";
 import { FC, useCallback, useState } from "react";
+import { CodeSandboxOutlined } from '@ant-design/icons';
 
 
 import { AnalyticsTopResource, TopAuthorSchema } from "./api/Analytics";
@@ -57,12 +58,22 @@ const TopAuthorsList: FC<TopAuthorsProps> = ({ authors, loading }) => {
         })
     };
 
+    const graphShow = useCallback((id_author: number) => {
+        dispatch({
+            type: ActionKind.ShowGraph,
+            payload: { id_author }
+        })
+    }, [dispatch])
+
     const onListItemRender = (author: TopAuthorSchema) => (
         <List.Item actions={
             !loading ? [
                 <Button onClick={() => onOpenButtonClick(author)}>
                     Open
-                </Button>
+                </Button>,
+                <Tooltip title="Show graph">
+                    <Button shape="circle" icon={<CodeSandboxOutlined />} onClick={() => graphShow(author.id_author)} />
+                </Tooltip>
             ] : undefined
         }>
             <Skeleton loading={loading} active paragraph={{ rows: 1 }}>

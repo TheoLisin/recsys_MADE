@@ -1,7 +1,7 @@
 import { useDLE } from "@rest-hooks/react";
-import { Button, Empty, List, Skeleton, Typography } from "antd";
+import { Button, Empty, List, Skeleton, Tooltip, Typography } from "antd";
 import { FC, useCallback } from "react";
-
+import { CodeSandboxOutlined } from '@ant-design/icons';
 
 import { AuthorRecommendSchema, AuthorsRecommendResource } from "./api/Author";
 import { Loading } from "./Loading";
@@ -25,12 +25,22 @@ const AuthorsList: FC<AuthorsProps> = ({ authors, loading }) => {
         })
     };
 
+    const graphShow = useCallback((id_author: number) => {
+        dispatch({
+            type: ActionKind.ShowGraph,
+            payload: { id_author }
+        })
+    }, [dispatch])
+
     const onListItemRender = (author: AuthorRecommendSchema) => (
         <List.Item actions={
             !loading ? [
                 <Button onClick={() => onOpenButtonClick(author)}>
                     Open
-                </Button>
+                </Button>,
+                <Tooltip title="Show graph">
+                    <Button shape="circle" icon={<CodeSandboxOutlined />} onClick={() => graphShow(author.id_author)} />
+                </Tooltip>
             ] : undefined
         }>
             <Skeleton loading={loading} active paragraph={{ rows: 1 }}>

@@ -14,6 +14,7 @@ import { UserModal } from "./UserModal";
 import { TopAuthors } from "./TopAuthors";
 import { AuthorModal } from "./AuthorModal";
 import { Recommended } from "./Recommended";
+import { GraphModal } from "./GraphModal";
 
 const { Content, Sider } = Layout;
 
@@ -22,7 +23,8 @@ const initialState: StateType = {
     authState: "BEFORE_LOGIN",
     showUser: false,
     page: "ARTICLES",
-    shownAuthor: undefined
+    shownAuthor: undefined,
+    shownGraph: undefined
 }
 
 const Page: FC = () => {
@@ -40,7 +42,7 @@ const Page: FC = () => {
 
             <AuthorModal />
             {state.authState === "LOGGED_IN" && <UserModal />}
-
+            {state.authState === "LOGGED_IN" && <GraphModal />}
             {state.authState === "LOGGED_IN" &&
                 <Layout>
                     <Sider width={200}>

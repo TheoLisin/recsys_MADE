@@ -1,10 +1,12 @@
 import { FC, useCallback } from "react";
-import { Button, Empty, List, Typography } from 'antd';
+import { Button, Col, Empty, List, Row, Tooltip, Typography } from 'antd';
 import { UserInfoSchema } from "./api/User";
 import { ArticleSchema } from "./api/Article";
 import { ActionKind } from "./state/types";
 import { useAppContext } from "./state/AppContext";
 import { AuthorSchema } from "./api/Author";
+
+import { CodeSandboxOutlined } from '@ant-design/icons';
 
 const { Paragraph, Text } = Typography;
 
@@ -14,7 +16,7 @@ type Props = {
     articles?: ArticleSchema[]
 }
 
-export const User: FC<Props> = ({ user, author, articles}: Props) => {
+export const User: FC<Props> = ({ user, author, articles }: Props) => {
     const { dispatch } = useAppContext();
 
     const onListItemRender = useCallback((article: ArticleSchema) => {
@@ -56,10 +58,22 @@ export const User: FC<Props> = ({ user, author, articles}: Props) => {
         }
     }, [articles, onListItemRender])
 
+    const graphShow = useCallback(() => {
+        if (author) {
+            dispatch({
+                type: ActionKind.ShowGraph,
+                payload: { id_author: author.id }
+            })
+        }
+    }, [author, dispatch])
+
     const authorName = useCallback(() => {
         if (author && user) {
             return <>
-                <Typography.Title level={3}>{author.name}</Typography.Title>
+                <Row gutter={8}>
+                    <Col><Typography.Title level={3}>{author.name}</Typography.Title></Col>
+                    <Col><Tooltip title="Show graph"><Button shape="circle" icon={<CodeSandboxOutlined />} onClick={ graphShow } /></Tooltip></Col>
+                </Row>
                 <Paragraph><Text type="secondary">{user.login}</Text></Paragraph>
             </>
         }
@@ -72,7 +86,7 @@ export const User: FC<Props> = ({ user, author, articles}: Props) => {
         else {
             return <Typography.Title level={3}>Unknown</Typography.Title>
         }
-    }, [user, author])
+    }, [user, author, graphShow])
 
     return <Paragraph>
         {authorName()}
