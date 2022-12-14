@@ -3,6 +3,9 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from starlette.middleware import Middleware
+from starlette.middleware.cors import CORSMiddleware
+
 
 from api.routers import (
     article_authors,
@@ -15,7 +18,17 @@ from api.routers import (
 )
 from api.endpoints import auth
 
-app = FastAPI()
+middleware = [
+    Middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    ),
+]
+
+app = FastAPI(middleware=middleware)
 
 app.include_router(articles.router)
 app.include_router(article_authors.router)

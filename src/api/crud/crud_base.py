@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Tuple, Set
+from typing import Any, Dict, Iterable, List, Tuple
 from sqlalchemy.orm import Query
 from random import sample
 
@@ -24,7 +24,7 @@ def resp_to_dict(
     return dct_resp
 
 
-def get_random_subset(cur_set: Set[Any], size: int) -> List[Any]:
+def get_random_subset(cur_set: Iterable[Any], size: int) -> List[Any]:
     if size > len(cur_set):
         return list(cur_set)
     return sample(cur_set, size)

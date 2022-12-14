@@ -15,10 +15,10 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=List[schemas.PUser])
-def users_get():
-    with get_session() as session:
-        return session.query(User).all()
+# @router.get("/", response_model=List[schemas.PUser])
+# def users_get():
+#     with get_session() as session:
+#         return session.query(User).all()
 
 
 @router.post("/", response_model=schemas.PUser)

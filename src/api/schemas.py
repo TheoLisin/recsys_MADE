@@ -37,10 +37,15 @@ class PAuthorBase(BaseModel):
     homepage: Optional[str] = None
 
 
-class PAuthorTop(BaseModel):
+class PAuthorCitation(BaseModel):
     id_author: int
     name: str
     n_citation: int
+
+
+class PAuthorTop(BaseModel):
+    tag: str
+    data: List[PAuthorCitation]
 
 
 class PAuthorRec(BaseModel):
@@ -97,6 +102,14 @@ class PArticleRec(BaseModel):
     id: int
     title: str
     tags: List[str]
+    year: str
+    abstract: str
+
+
+class PAuthorInfo(BaseModel):
+    id_author: int
+    author: PAuthor
+    articles: List[PArticle]
 
 
 class PVenueBase(BaseModel):

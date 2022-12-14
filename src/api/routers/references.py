@@ -15,10 +15,10 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=List[schemas.PReference])
-def references_get():
-    with get_session() as session:
-        return session.query(Reference).all()
+# @router.get("/", response_model=List[schemas.PReference])
+# def references_get():
+#     with get_session() as session:
+#         return session.query(Reference).all()
 
 
 @router.post("/", response_model=schemas.PReference)

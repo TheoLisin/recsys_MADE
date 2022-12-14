@@ -2,19 +2,22 @@ from api import schemas
 from api.crud.crud_authors import author_top_tag, create_graph
 
 from db.db_params import get_session
+from db.models import Tag
 
-from typing import List
 from fastapi import APIRouter
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 router = APIRouter(prefix="/analytics")
 
 
-@router.get("/top", tags=["Authors"], response_model=List[schemas.PAuthorTop])
-def top_authors(tag: str, top: int = 100):
+@router.get("/top", tags=["Authors"], response_model=schemas.PAuthorTop)
+def top_authors(tag_part: str, top: int = 100):
     with get_session() as session:
-        resp = author_top_tag(session, tag, top)
-    return resp
+        tag = session.query(Tag).where(Tag.tag.ilike(f"%{tag_part}%")).first()
+        if tag is None:
+            return {"tag": tag_part, "data": []}
+        resp = author_top_tag(session, tag=tag.tag, top=top)
+    return {"tag": tag.tag, "data": resp}
 
 
 @router.get("/graph")

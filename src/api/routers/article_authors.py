@@ -1,5 +1,6 @@
 from api import schemas
 from api.constants import RESPONSE_OK
+from api.core.api_config import PAGINATION_LIMIT
 
 from db.models import ArticleAuthor
 from db.db_params import get_session
@@ -19,9 +20,14 @@ router = APIRouter(
     "/",
     response_model=List[schemas.PArticleAuthor],
 )
-def articleauthors_get():
+def articleauthors_get(page: int):
     with get_session() as session:
-        return session.query(ArticleAuthor).all()
+        return (
+            session.query(ArticleAuthor)
+            .limit(PAGINATION_LIMIT)
+            .offset((page - 1) * PAGINATION_LIMIT)
+            .all()
+        )
 
 
 @router.post(

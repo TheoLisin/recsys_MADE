@@ -26,6 +26,7 @@ setuptools.setup(
     ],
     python_requires=">=3.8",
     install_requires=[
+        "redis",
         "pyvis",
         "architect",
         "matplotlib",
