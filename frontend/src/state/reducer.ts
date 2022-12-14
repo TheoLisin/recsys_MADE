@@ -1,4 +1,5 @@
 import { ArticleSchema } from "../api/Article";
+import { GraphInfo } from "../Graph";
 import { Action, ActionKind, Page, StateType } from "./types";
 
 export const reducer = (state: StateType, action: Action): StateType => {
@@ -66,6 +67,16 @@ export const reducer = (state: StateType, action: Action): StateType => {
             return {
                 ...state,
                 shownAuthor: undefined
+            }
+        case ActionKind.ShowGraph:
+            return {
+                ...state,
+                shownGraph: payload as GraphInfo
+            }
+        case ActionKind.CloseGraph:
+            return {
+                ...state,
+                shownGraph: undefined
             }
 
         default:
