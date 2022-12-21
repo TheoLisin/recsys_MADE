@@ -1,49 +1,46 @@
 import { Layout } from "antd";
-import React from "react";
-import { FC } from "react";
+import React, { useEffect } from "react";
 
 import { ArticleModal } from "./ActicleModal";
 import { Articles } from "./Articles";
 import { Auth } from "./Auth"
 import { Menu } from "./Menu";
-import AppContext from "./state/AppContext"
-import reducer from "./state/reducer";
-import { StateType } from "./state/types"
+import { useAppContext } from "./state/AppContext"
 import { SignUp } from "./Signup";
 import { UserModal } from "./UserModal";
 import { TopAuthors } from "./TopAuthors";
 import { AuthorModal } from "./AuthorModal";
 import { Recommended } from "./Recommended";
 import { GraphModal } from "./GraphModal";
+import { token } from "./api/token";
+import { useController } from "@rest-hooks/react";
 
 const { Content, Sider } = Layout;
 
-const initialState: StateType = {
-    shownArticle: undefined,
-    authState: "BEFORE_LOGIN",
-    showUser: false,
-    page: "ARTICLES",
-    shownAuthor: undefined,
-    shownGraph: undefined
-}
+const Page: React.FC = () => {
+    const { state } = useAppContext()
+    const { resetEntireStore } = useController();
 
-const Page: FC = () => {
-    const [state, dispatch] = React.useReducer(reducer, initialState);
-    const providerState = {
-        state,
-        dispatch,
-    };
+
+    useEffect(() => {
+        if (state.authState === "LOGGED_OUT") {
+            token.reset()
+            resetEntireStore();
+        }
+    }, [state.authState, resetEntireStore]);
+
 
     return <>
-        <AppContext.Provider value={providerState}>
-            <Auth />
-            <SignUp />
-            <ArticleModal />
+        <Auth show={state.authState === "LOGGED_OUT"} />
+        <SignUp show={state.authState === "SIGN_UP"} />
 
-            <AuthorModal />
-            {state.authState === "LOGGED_IN" && <UserModal />}
-            {state.authState === "LOGGED_IN" && <GraphModal />}
-            {state.authState === "LOGGED_IN" &&
+        <ArticleModal />
+        <AuthorModal />
+
+        {state.authState === "LOGGED_IN" &&
+            <>
+                <UserModal />
+                <GraphModal />
                 <Layout>
                     <Sider width={200}>
                         <Menu />
@@ -62,8 +59,8 @@ const Page: FC = () => {
                         </Content>
                     </Layout>
                 </Layout>
-            }
-        </AppContext.Provider>
+            </>
+        }
     </>
 }
 

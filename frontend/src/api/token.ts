@@ -1,11 +1,22 @@
-const makeToken = () => {
-    let _value: string | undefined = undefined;
+import { getLocalStorageValue, removeFromLocalStorageValue, setLocalStorageValue } from "../utils/useLocalStorage";
 
+const TOKEN_KEY = 'auth_token'
+
+const makeToken = () => {
     return ({
-        set: (token: string | undefined) => { _value = token },
-        get: () => _value,
-        is_valid: () => _value !== undefined,
-        reset: () => { _value = undefined; },
+        set: (token: string | undefined) => {
+            setLocalStorageValue(TOKEN_KEY, token)
+        },
+
+        get: () => {
+            return getLocalStorageValue(TOKEN_KEY, undefined)
+        },
+
+        is_valid: () => {
+            return getLocalStorageValue(TOKEN_KEY, undefined) !== undefined
+        },
+
+        reset: () => { removeFromLocalStorageValue(TOKEN_KEY) },
     })
 };
 

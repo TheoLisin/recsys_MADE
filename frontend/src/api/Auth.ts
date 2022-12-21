@@ -8,12 +8,12 @@ export interface AuthData {
     token_type: string;
 }
 
-export interface Params {
+export interface AuthParams {
     username: string;
     password: string;
 }
 
-const authFetch = ({ username, password }: Params): Promise<AuthData> =>
+const authFetch = ({ username, password }: AuthParams): Promise<AuthData> =>
     api_fetch(`${PREFIX}/api/auth/login`,
         {
             method: 'post',

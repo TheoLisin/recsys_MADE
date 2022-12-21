@@ -3,20 +3,13 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { CacheProvider } from '@rest-hooks/react';
 
 const root = ReactDOM.createRoot(
     document.getElementById('root') as HTMLElement
 );
 
-const managers = [...CacheProvider.defaultProps.managers];
-
 root.render(
-    <CacheProvider managers={managers}>
-        <React.StrictMode>
-            <App />
-        </React.StrictMode>
-    </CacheProvider>
+    <App />
 );
 
 // If you want to start measuring performance in your app, pass a function

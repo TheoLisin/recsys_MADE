@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Button, Form, Input, Modal, message } from 'antd';
 
 import { useAppContext } from './state/AppContext';
@@ -35,28 +35,13 @@ const samePasswordRule: Rule =
         },
     });
 
-/**
- * Open registration form in modal
- * 
- * Modal will be opened of `state.authState` has "SIGN_UP" value.
- * It closes on the successful registration or by the close button.
- * Always dispatch Logout action on close.
- * 
- * @param props takes onSumbit handler
- */
+
 const RegistrationForm: React.FC<Props> = ({ onSubmit }: Props) => {
     const [messageApi, contextHolder] = message.useMessage();
-    const { dispatch, state } = useAppContext();
+    const { dispatch } = useAppContext();
     const [form] = Form.useForm();
 
-    const [isModalOpen, setModalOpen] = useState(false);
     const [isLoading, setLoading] = useState(false);
-
-    const onModalClose = () => {
-        form.resetFields();
-        setModalOpen(false);
-        dispatch({ type: ActionKind.Logout });
-    }
 
     const onFinish = (form_data: FormType) => {
         setLoading(true);
@@ -67,7 +52,9 @@ const RegistrationForm: React.FC<Props> = ({ onSubmit }: Props) => {
                 content: `${login} registered!`,
             });
 
-            onModalClose();
+            dispatch({ type: ActionKind.Logout });
+
+            form.resetFields();
         }).catch(
             (error: ServerError) => {
                 messageApi.open({
@@ -80,84 +67,75 @@ const RegistrationForm: React.FC<Props> = ({ onSubmit }: Props) => {
         );
     };
 
-    /** Show modal on logout */
-    useEffect(() => {
-        if (state.authState === "SIGN_UP") {
-            setModalOpen(true);
-        }
-    }, [state])
-
     return (
         <>
             {contextHolder}
 
-            <Modal
-                title="Register"
-                open={isModalOpen}
-                footer={null}
-                closable={true}
-                onCancel={onModalClose}
+            <Form
+                name="basic"
+                labelCol={{ span: 8 }}
+                wrapperCol={{ span: 16 }}
+                initialValues={{ remember: true }}
+                onFinish={onFinish}
+                autoComplete="off"
+                form={form}
             >
-                <Form
-                    name="basic"
-                    labelCol={{ span: 8 }}
-                    wrapperCol={{ span: 16 }}
-                    initialValues={{ remember: true }}
-                    onFinish={onFinish}
-                    autoComplete="off"
-                    form={form}
+                <Form.Item
+                    label="Username"
+                    name="username"
+                    rules={[{
+                        required: true,
+                        message: 'Please input your username!'
+                    }]}
                 >
-                    <Form.Item
-                        label="Username"
-                        name="username"
-                        rules={[{
+                    <Input />
+                </Form.Item>
+
+                <Form.Item
+                    name="password"
+                    label="Password"
+                    rules={[{
+                        required: true,
+                        message: 'Please input your password!',
+                    }]}
+                    hasFeedback
+                >
+                    <Input.Password />
+                </Form.Item>
+
+                <Form.Item
+                    name="confirm"
+                    label="Confirm Password"
+                    dependencies={['password']}
+                    hasFeedback
+                    rules={[
+                        {
                             required: true,
-                            message: 'Please input your username!'
-                        }]}
-                    >
-                        <Input />
-                    </Form.Item>
+                            message: 'Please confirm your password!',
+                        },
+                        samePasswordRule,
+                    ]}
+                >
+                    <Input.Password />
+                </Form.Item>
 
-                    <Form.Item
-                        name="password"
-                        label="Password"
-                        rules={[{
-                            required: true,
-                            message: 'Please input your password!',
-                        }]}
-                        hasFeedback
-                    >
-                        <Input.Password />
-                    </Form.Item>
-
-                    <Form.Item
-                        name="confirm"
-                        label="Confirm Password"
-                        dependencies={['password']}
-                        hasFeedback
-                        rules={[
-                            {
-                                required: true,
-                                message: 'Please confirm your password!',
-                            },
-                            samePasswordRule,
-                        ]}
-                    >
-                        <Input.Password />
-                    </Form.Item>
-
-                    <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                        <Button type="primary" htmlType="submit" loading={isLoading}>
-                            Register
-                        </Button>
-                    </Form.Item>
-                </Form>
-            </Modal>
+                <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+                    <Button type="primary" htmlType="submit" loading={isLoading}>
+                        Register
+                    </Button>
+                </Form.Item>
+            </Form>
         </>
     );
 };
 
-export const SignUp: React.FC = () => {
+export type SignUpParam = {
+    show: boolean
+}
+
+export const SignUp: React.FC<SignUpParam> = ({ show }: SignUpParam) => {
+    const { dispatch } = useAppContext();
+
     const handleSignup = useCallback(
         async (formData: FormType) => {
             return fetchSignup.fetch({
@@ -168,5 +146,19 @@ export const SignUp: React.FC = () => {
         [],
     );
 
-    return <RegistrationForm onSubmit={handleSignup} />;
+    const onModalClose = () => {
+        dispatch({ type: ActionKind.Logout });
+    };
+
+    return <>
+        <Modal
+            title="Register"
+            open={show}
+            footer={null}
+            closable={true}
+            onCancel={onModalClose}
+        >
+            <RegistrationForm onSubmit={handleSignup} />
+        </Modal>
+    </>;
 }

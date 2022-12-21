@@ -7,6 +7,7 @@ import { FIRST_PAGE_INDEX, PAGE_SIZE } from "./api/consts";
 import { ArticlesFilters } from "./ArticlesFilters";
 import { useAppContext } from "./state/AppContext";
 import { ActionKind } from "./state/types";
+import { Error } from "./Error";
 
 type ArticlesListProps = {
     articles: Array<ArticleSchema>
@@ -88,9 +89,11 @@ export const Articles: FC = () => {
 
     const articles = useCallback(() => {
         if (error) {
-            return <div>
-                <>Failed read articles from page {page}. Error {error.status}</>
-            </div>;
+            return <Error
+                title={`Failed to read articles from page ${page}`}
+                msg={error.message}
+                status={error.status as number}
+            />
         }
         else if (loading || !data) {
             return <ArticlesList articles={ARTICLES_STUBS} loading={loading} />
@@ -107,3 +110,4 @@ export const Articles: FC = () => {
             <Pagination defaultCurrent={page} total={100000} onChange={onPageChange} />}
     </>
 }
+ 

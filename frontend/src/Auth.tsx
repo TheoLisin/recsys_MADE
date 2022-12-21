@@ -2,141 +2,153 @@ import { useCallback, useEffect, useState } from 'react';
 import { Button, Form, Input, Modal, message } from 'antd';
 
 import { token } from './api/token';
-import { fetchAuth, AuthData } from './api/Auth';
-import { useLocalStorage } from './utils/useLocalStorage';
+import { fetchAuth, AuthParams } from './api/Auth';
 import { useAppContext } from './state/AppContext';
 import { ActionKind } from './state/types';
-import { useController } from '@rest-hooks/react';
+import { useController, useDLE } from '@rest-hooks/react';
+import { ServerError } from './api/Error';
 
 
-type FormType = {
+type FormFields = {
     username: string,
     password: string
 };
 
-type SubmitCallback = (formData: FormType) => Promise<AuthData>;
+type SubmitCallback = (formData: FormFields) => void;
 
-type Props = {
+type AuthFormProps = {
     onSubmit: SubmitCallback
+    onSignUp: () => void
+    isLoading: boolean
 };
 
-const AuthForm: React.FC<Props> = (props: Props) => {
+const AuthForm: React.FC<AuthFormProps> = ({ onSubmit, onSignUp, isLoading }) => {
+    return (
+        <Form
+            name="basic"
+            labelCol={{ span: 8 }}
+            wrapperCol={{ span: 16 }}
+            initialValues={{ remember: true }}
+            onFinish={onSubmit}
+            autoComplete="off"
+        >
+            <Form.Item
+                label="Username"
+                name="username"
+                rules={[{ required: true, message: 'Please input your username!' }]}
+            >
+                <Input />
+            </Form.Item>
+
+            <Form.Item
+                label="Password"
+                name="password"
+                rules={[{ required: true, message: 'Please input your password!' }]}
+            >
+                <Input.Password />
+            </Form.Item>
+
+            <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+                <Button type="primary" htmlType="submit" loading={isLoading} className="login-form-button">
+                    Submit
+                </Button>
+                <br />
+                Or <a onClick={onSignUp}> register now! </a>
+            </Form.Item>
+        </Form>
+    );
+};
+
+export type AuthProps = {
+    show: boolean
+};
+
+export const Auth: React.FC<AuthProps> = ({ show }: AuthProps) => {
+    /* Render modal */
+    return <>
+        <Modal
+            title="Login"
+            open={show}
+            footer={null}
+            closable={false}
+            destroyOnClose={true}
+        >
+            <Authentication />
+        </Modal>
+    </>;
+}
+
+const Authentication: React.FC = () => {
+    const { isAuthFinished, isLoading, error, setCredentials } = useAuth();
+
     const [messageApi, contextHolder] = message.useMessage();
-    const [authToken, setToken] = useLocalStorage<string | undefined>("auth_token", undefined);
-    const { dispatch, state } = useAppContext();
-    const { resetEntireStore } = useController();
 
-    const [isModalOpen, setModalOpen] = useState(false);
-    const [isLoading, setLoading] = useState(false);
+    const { dispatch } = useAppContext();
 
-    const onFinish = (values: any) => {
-        setLoading(true);
-
-        props.onSubmit(values).then(({ access_token }) => {
-            setToken(access_token);
-            dispatch({ type: ActionKind.Login });
-
-            setModalOpen(false);
-        }).catch(
-            (error) => {
-                messageApi.open({
-                    type: 'error',
-                    content: `Authentication error: ${error.detail}`,
-                });
-            }
-        ).finally(
-            () => setLoading(false)
-        );
-    };
+    const handleLogin = (formData: FormFields) => {
+        setCredentials({
+            username: formData.username,
+            password: formData.password
+        });
+    }
 
     const signUp = () => {
         dispatch({ type: ActionKind.SignUp });
-        setModalOpen(false);
     }
 
-    /** Reset token on logout */
     useEffect(() => {
-        if (state.authState === "LOGGED_OUT") {
-            setToken(undefined);
-            dispatch({type: ActionKind.WaitForLogin})
-        } else if (state.authState === "BEFORE_LOGIN") {
-            setModalOpen(true);
-        }
-    }, [state, setToken, dispatch])
-
-    /** On any authToken change do set/reset of auth context */
-    useEffect(() => {
-        if (authToken) {
-            token.set(authToken)
-            dispatch({ type: ActionKind.Login })
-            setModalOpen(false)
-        }
-        else {
-            resetEntireStore();
-            token.reset()
-            setModalOpen(true);
-        }
-    }, [authToken, dispatch, resetEntireStore])
-
-    return (
-        <>
-            {contextHolder}
-
-            <Modal
-                title="Login"
-                open={isModalOpen}
-                footer={null}
-                closable={false}
-            >
-                <Form
-                    name="basic"
-                    labelCol={{ span: 8 }}
-                    wrapperCol={{ span: 16 }}
-                    initialValues={{ remember: true }}
-                    onFinish={onFinish}
-                    autoComplete="off"
-                >
-                    <Form.Item
-                        label="Username"
-                        name="username"
-                        rules={[{ required: true, message: 'Please input your username!' }]}
-                    >
-                        <Input />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Password"
-                        name="password"
-                        rules={[{ required: true, message: 'Please input your password!' }]}
-                    >
-                        <Input.Password />
-                    </Form.Item>
-
-                    <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                        <Button type="primary" htmlType="submit" loading={isLoading} className="login-form-button">
-                            Submit
-                        </Button>
-                        <br />
-                        Or <a onClick={signUp}>
-                            register now!
-                        </a>
-                    </Form.Item>
-                </Form>
-            </Modal>
-        </>
-    );
-};
-
-export const Auth: React.FC = () => {
-    const handleLogin = useCallback(
-        async (formData: FormType) => {
-            return fetchAuth.fetch({
-                password: formData.password,
-                username: formData.username
+        if (error) {
+            messageApi.open({
+                type: 'error',
+                content: `Authentication error: ${error.detail}`,
             });
-        },
-        [],
-    );
+        }
+    }, [error, messageApi])
 
-    return <AuthForm onSubmit={handleLogin} />;
+    useEffect(() => {
+        if (isAuthFinished) {
+            dispatch({ type: ActionKind.Login });
+        }
+    }, [dispatch, isAuthFinished])
+
+    return <>
+        {contextHolder}
+        <AuthForm
+            onSubmit={handleLogin}
+            onSignUp={signUp}
+            isLoading={isLoading}
+        />
+    </>
+}
+
+/**
+ * Try to login if credentials provided
+ *  
+ * @returns `isAuthFinished` false indicates the credentials is not set or error occurred
+ * @returns `loading` auth in progress
+ * @returns `error` contains error from server if auth failed
+ * @returns `setCredentials` use this to provide credentials for auth
+ */
+function useAuth() {
+    const [credentials, setCredentials] = useState<AuthParams | null>(null);
+    const { data, loading, error } = useDLE(fetchAuth, credentials);
+    const controller = useController()
+
+    useEffect(() => {
+        if (data) {
+            token.set(data.access_token);
+            controller.invalidate(fetchAuth, credentials);
+        }
+    },
+    [data]);
+
+    const errorMsg = error ? (error as unknown as ServerError) : undefined;
+    const isAuthFinished = !!data;
+
+    return {
+        isAuthFinished,
+        isLoading: loading,
+        error: errorMsg,
+        setCredentials
+    };
 }

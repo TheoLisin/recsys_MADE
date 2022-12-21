@@ -4,6 +4,7 @@ import { FC, useCallback, useState } from "react";
 
 import { ArticleRecommendResource, ArticleRecommendSchema } from "./api/Article";
 import { FIRST_PAGE_INDEX, PAGE_SIZE } from "./api/consts";
+import { Error } from "./Error";
 import { Loading } from "./Loading";
 import { useAppContext } from "./state/AppContext";
 import { ActionKind } from "./state/types";
@@ -63,21 +64,26 @@ export const ArticlesRecommend: FC = () => {
 
     const articles = useCallback(() => {
         if (error && error.status !== 422) {
-            return <div>
-                <>Failed read articles. Error {error.status}</>
-            </div>;
+            return <Error
+                title={"Failed to read articles"}
+                msg={error.message}
+                status={error.status as number}
+            />
         }
         else if (error && error.status === 422) {
             return <Empty />
         }
-        else if (loading || !data) {
+        else if (loading) {
             return <Loading />;
         }
-        else {
+        else if (data) {
             return <>
                 <Title level={4}>Recommended articles</Title>
                 <ArticlesList articles={data} />
             </>
+        }
+        else {
+            return <Empty />
         }
     }, [error, data, loading])
 

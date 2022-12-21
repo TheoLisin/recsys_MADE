@@ -8,6 +8,7 @@ import { AnalyticsTopResource, TopAuthorSchema } from "./api/Analytics";
 import { Loading } from "./Loading";
 import { useAppContext } from "./state/AppContext";
 import { ActionKind } from "./state/types";
+import { Error } from "./Error";
 
 type SearchProps = {
     onApply: (filters: Filters) => void
@@ -97,9 +98,9 @@ export type Filters = {
 }
 
 export const TopAuthors: FC = () => {
-    const [filters, setFilters] = useState<Filters>({})
+    const [filters, setFilters] = useState<Filters | null>(null)
 
-    const { data, loading, error } = useDLE(AnalyticsTopResource, { ...filters });
+    const { data, loading, error } = useDLE(AnalyticsTopResource, filters ? { ...filters } : null );
 
     /** Apply filters */
     const onFiltersApply = useCallback((new_filters: Filters) => {
@@ -108,27 +109,32 @@ export const TopAuthors: FC = () => {
             setFilters(new_filters)
         }
         else {
-            setFilters({})
+            setFilters(null)
         }
     }, [])
 
     const authors = useCallback(() => {
         if (error && error.status !== 422) {
-            return <div>
-                <>Failed read top authors. Error {error.status}</>
-            </div>;
+            return <Error
+                title="Failed to read top authors"
+                msg={error.message}
+                status={error.status as number}
+            />
         }
         else if (error && error.status === 422) {
             return <Empty />
         }
-        else if (loading || !data) {
+        else if (loading) {
             return <Loading />;
         }
-        else {
+        else if (data) {
             return <>
                 <Title level={4}>Top for tag: "{data.tag}"</Title>
                 <TopAuthorsList authors={data.data} />
             </>
+        }
+        else {
+            return <Empty description="Enter the tag to find top users"></Empty>
         }
     }, [error, data, loading])
 

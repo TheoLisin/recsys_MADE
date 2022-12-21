@@ -6,6 +6,7 @@ import {
 
 import { useAppContext } from "./state/AppContext";
 import { ActionKind, Page } from "./state/types";
+import { setLocalStorageValue } from "./utils/useLocalStorage";
 
 const menuStyle = { height: '100%', borderRight: 0, paddingTop: 10 };
 
@@ -21,6 +22,7 @@ export const Menu: FC = () => {
     };
 
     const showPage = (page: Page) => {
+        setLocalStorageValue('page', page as string)
         dispatch({ type: ActionKind.SetPage, payload: page });
     };
 

@@ -7,6 +7,7 @@ import { AuthorRecommendSchema, AuthorsRecommendResource } from "./api/Author";
 import { Loading } from "./Loading";
 import { useAppContext } from "./state/AppContext";
 import { ActionKind } from "./state/types";
+import { Error } from "./Error";
 
 const { Title } = Typography;
 
@@ -64,9 +65,11 @@ export const AuthorsRecommended: FC = () => {
 
     const authors = useCallback(() => {
         if (error && error.status !== 422) {
-            return <div>
-                <>Failed read top authors. Error {error.status}</>
-            </div>;
+            return <Error
+                title={"Failed to read top authors"}
+                msg={error.message}
+                status={error.status as number}
+            />
         }
         else if (error && error.status === 422) {
             return <Empty />

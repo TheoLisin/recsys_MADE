@@ -41,6 +41,3 @@ export const Graph: FC<Props> = ({ graph }: Props) => {
         </iframe>
     </Paragraph >
 }
-
-
-

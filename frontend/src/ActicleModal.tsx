@@ -24,6 +24,7 @@ export const ArticleModal: FC = () => {
                     type: ActionKind.CloseArticle
                 });
             }}
+            zIndex={1001}
         >
             {!!article && // needs to prevent type errors on article prop
                 <Article article={article} fullInfo={true}></Article>}

@@ -3,6 +3,7 @@ import { Modal } from "antd";
 import { FC, useCallback, useEffect, useState } from "react";
 
 import { UserResource } from "./api/User";
+import { Error } from "./Error";
 import { Loading } from "./Loading";
 import { useAppContext } from "./state/AppContext";
 import { ActionKind } from "./state/types";
@@ -19,9 +20,11 @@ const UserModalBase: FC<BaseProps> = ({ showUser, onClose }: BaseProps) => {
     const user = useCallback(
         () => {
             if (error) {
-                return <div>
-                    <>Failed to get user info. Error {error.status}</>
-                </div>;
+                return <Error
+                    title={"Failed to get user info"}
+                    msg={error.message}
+                    status={error.status as number}
+                />
             }
             else if (loading || !data) {
                 return <Loading />

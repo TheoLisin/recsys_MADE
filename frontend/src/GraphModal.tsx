@@ -1,23 +1,19 @@
 import { Modal } from "antd";
-import { FC, useEffect, useState } from "react";
-import { Graph, GraphInfo } from "./Graph";
+import { FC } from "react";
+import { Graph } from "./Graph";
 import { useAppContext } from "./state/AppContext";
 import { ActionKind } from "./state/types";
 
 export const GraphModal: FC = () => {
     const { state, dispatch } = useAppContext();
-    const [graph, setGraph] = useState<GraphInfo | undefined>(undefined)
 
-    /** React on change of `shown_article` */
-    useEffect(() => {
-        setGraph(state.shownGraph);
-    }, [state])
+    const isGraphShown = !!state.shownGraph;
 
     return <>
         {<Modal
             title={null}
             destroyOnClose={true}
-            open={!!graph}
+            open={isGraphShown}
             footer={null}
             closable={true}
             onCancel={() => { // close button action
@@ -27,8 +23,8 @@ export const GraphModal: FC = () => {
             }}
             width={800}
         >
-            {!!graph && // needs to prevent type errors on article prop
-                <Graph graph={graph}></Graph>}
+            {!!state.shownGraph && // needs to prevent type errors on article prop
+                <Graph graph={state.shownGraph}></Graph>}
         </Modal>}
     </>
 }
